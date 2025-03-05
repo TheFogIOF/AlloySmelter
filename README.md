@@ -1,8 +1,6 @@
 # AlloySmelter
 
-The Alloy Smelter adds a multi-block alloy smelter, the Alloy Forge. In its basic configuration, it serves as a simple way to increase the speed of ore smelting, but everything is data-driven, allowing you to add recipes as you see fit. These data-driven features are primarily intended for mod and modpack authors.
-
-It is also possible to change the blocks required for the forge, the block tag for the forge `alloy_smelter_blocks`
+This mod adds a multi-block structure for smelting ores. In its basic configuration, it serves as a simple way to increase the speed of smelting ores, but you can add recipes as you see fit. These features are primarily intended for mod and modpack authors.
 
 Example of json recipe:
 ```
