@@ -14,8 +14,8 @@ import java.util.concurrent.atomic.AtomicLong;
 public class ForgeControllerScreen extends AbstractContainerScreen<ForgeControllerMenu> {
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(AlloySmelter.MOD_ID, "textures/gui/alloy_smelter.png");
 
-    public ForgeControllerScreen(ForgeControllerMenu pMenu, Inventory pPlayerInventory, Component pTitle) {
-        super(pMenu, pPlayerInventory, pTitle);
+    public ForgeControllerScreen(ForgeControllerMenu menu, Inventory inventory, Component title) {
+        super(menu, inventory, title);
     }
 
     @Override
@@ -53,8 +53,8 @@ public class ForgeControllerScreen extends AbstractContainerScreen<ForgeControll
 
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float delta) {
-        renderBackground(guiGraphics);
-        super.render(guiGraphics, mouseX, mouseY, delta);
+        renderBackground(guiGraphics, mouseX, mouseY, delta);
         renderTooltip(guiGraphics, mouseX, mouseY);
+        super.render(guiGraphics, mouseX, mouseY, delta);
     }
 }

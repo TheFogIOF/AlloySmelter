@@ -1,32 +1,37 @@
 package sk.alloy_smelter.recipe;
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.GsonHelper;
-import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.common.crafting.CraftingHelper;
+import net.neoforged.neoforge.common.util.NeoForgeExtraCodecs;
+import net.neoforged.neoforge.common.util.RecipeMatcher;
+import net.neoforged.neoforge.items.wrapper.RecipeWrapper;
 import sk.alloy_smelter.AlloySmelter;
+import sk.alloy_smelter.registry.RecipeTypes;
+import sk.alloy_smelter.registry.RecipeSerializers;
 
-import javax.annotation.Nullable;
+import java.util.Optional;
+import java.util.function.Predicate;
 
-public class SmeltingRecipe implements Recipe<SimpleContainer> {
-    private final ResourceLocation id;
-    private final NonNullList<Ingredient> inputItems;
+public class SmeltingRecipe implements Recipe<RecipeWrapper> {
+    private final NonNullList<Material> inputItems;
     private final ItemStack output;
     private final int smeltingTime;
     private final int fuelPerTick;
 
-    public SmeltingRecipe(ResourceLocation id, NonNullList<Ingredient> inputItems, ItemStack output, int smeltingTime, int fuelPerTick) {
-        this.id = id;
+    public SmeltingRecipe(NonNullList<Material> inputItems, ItemStack output, int smeltingTime, int fuelPerTick) {
         this.inputItems = inputItems;
         this.output = output;
         this.smeltingTime = smeltingTime;
@@ -45,39 +50,33 @@ public class SmeltingRecipe implements Recipe<SimpleContainer> {
         return getResultItem(null);
     }
 
-    @Override
-    public ResourceLocation getId() {
-        return this.id;
-    }
-
-    @Override
-    public NonNullList<Ingredient> getIngredients() {
+    public NonNullList<Material> getMaterials() {
         return this.inputItems;
     }
 
     @Override
-    public ItemStack getResultItem(RegistryAccess access) {
+    public ItemStack getResultItem(HolderLookup.Provider provider) {
         return this.output.copy();
     }
 
     @Override
-    public ItemStack assemble(SimpleContainer simpleContainer, RegistryAccess registryAccess) {
+    public ItemStack assemble(RecipeWrapper recipeWrapper, HolderLookup.Provider provider) {
         return this.output.copy();
     }
 
     @Override
-    public boolean matches(SimpleContainer simpleContainer, Level level) {
+    public boolean matches(RecipeWrapper recipeWrapper, Level level) {
         java.util.List<ItemStack> inputs = new java.util.ArrayList<>();
         int i = 0;
 
         for (int j = 0; j < 2; ++j) {
-            ItemStack itemstack = simpleContainer.getItem(j);
+            ItemStack itemstack = recipeWrapper.getItem(j);
             if (!itemstack.isEmpty()) {
                 ++i;
                 inputs.add(itemstack);
             }
         }
-        return i == this.inputItems.size() && net.minecraftforge.common.util.RecipeMatcher.findMatches(inputs, this.inputItems) != null;
+        return i == this.inputItems.size() && RecipeMatcher.findMatches(inputs, this.inputItems) != null;
     }
 
     @Override
@@ -87,71 +86,76 @@ public class SmeltingRecipe implements Recipe<SimpleContainer> {
 
     @Override
     public RecipeSerializer<?> getSerializer() {
-        return Serializer.INSTANCE;
+        return RecipeSerializers.SMELTING.get();
     }
 
     @Override
     public RecipeType<?> getType() {
-        return Type.INSTANCE;
-    }
-
-    public static class Type implements RecipeType<SmeltingRecipe> {
-        public static final Type INSTANCE = new Type();
-        public static final String ID = "smelting";
+        return RecipeTypes.SMELTING.get();
     }
 
     public static class Serializer implements RecipeSerializer<SmeltingRecipe> {
-        public static final Serializer INSTANCE = new Serializer();
-        public static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(AlloySmelter.MOD_ID, "smelting");
+        private static final MapCodec<SmeltingRecipe> CODEC = RecordCodecBuilder.mapCodec(inst -> inst.group(
+                NonNullList.codecOf(Material.CODEC).fieldOf("ingredients").forGetter(SmeltingRecipe::getMaterials),
+                ItemStack.STRICT_CODEC.fieldOf("result").forGetter(r -> r.output),
+                Codec.INT.optionalFieldOf("smeltingTime", 200).forGetter(SmeltingRecipe::getSmeltingTime),
+                Codec.INT.optionalFieldOf("fuelPerTick", 1).forGetter(SmeltingRecipe::fuelPerTick)
+        ).apply(inst, SmeltingRecipe::new));
+
+        public static final StreamCodec<RegistryFriendlyByteBuf, SmeltingRecipe> STREAM_CODEC = StreamCodec.of(SmeltingRecipe.Serializer::toNetwork, SmeltingRecipe.Serializer::fromNetwork);
 
         @Override
-        public SmeltingRecipe fromJson(ResourceLocation id, JsonObject json) {
-            final NonNullList<Ingredient> inputItems = readIngredients(GsonHelper.getAsJsonArray(json, "ingredients"));
-
-            if (inputItems.isEmpty()) throw new JsonParseException("No ingredients for recipe");
-            else if (inputItems.size() > 2) throw new JsonParseException("Too many ingredients for recipe! The max is 2");
-            else {
-                final ItemStack output = CraftingHelper.getItemStack(GsonHelper.getAsJsonObject(json, "result"), true);
-                final int smeltingTime = GsonHelper.getAsInt(json, "smeltingTime", 200);
-                final int fuelPerTick = GsonHelper.getAsInt(json, "fuelPerTick", 1);
-
-                return new SmeltingRecipe(id, inputItems, output, smeltingTime, fuelPerTick);
-            }
-        }
-
-        private static NonNullList<Ingredient> readIngredients(JsonArray ingredientArray) {
-            NonNullList<Ingredient> nonnulllist = NonNullList.create();
-            for (int i = 0; i < ingredientArray.size(); ++i) {
-                JsonObject jsonIngredient = ingredientArray.get(i).getAsJsonObject();
-                Ingredient ingredient = Ingredient.fromJson(jsonIngredient);
-                int count = 1; if (jsonIngredient.has("count")) count = GsonHelper.getAsInt(jsonIngredient, "count");
-                ingredient.getItems()[0].setCount(count);
-                if (!ingredient.isEmpty()) nonnulllist.add(ingredient);
-            }
-            return nonnulllist;
+        public MapCodec<SmeltingRecipe> codec() {
+            return CODEC;
         }
 
         @Override
-        public @Nullable SmeltingRecipe fromNetwork(ResourceLocation id, FriendlyByteBuf buffer) {
+        public StreamCodec<RegistryFriendlyByteBuf, SmeltingRecipe> streamCodec() {
+            return STREAM_CODEC;
+        }
+
+        private static SmeltingRecipe fromNetwork(RegistryFriendlyByteBuf buffer) {
             int i = buffer.readVarInt();
-            NonNullList<Ingredient> inputItems = NonNullList.withSize(i, Ingredient.EMPTY);
-            for (int j = 0; j < inputItems.size(); ++j) {
-                inputItems.set(j, Ingredient.fromNetwork(buffer));
-            }
-            ItemStack output = buffer.readItem();
+            NonNullList<Material> inputItems = NonNullList.withSize(i, Material.of(Ingredient.EMPTY, 0));
+            inputItems.replaceAll(ignored -> Material.STREAM_CODEC.decode(buffer));
+            ItemStack output = ItemStack.STREAM_CODEC.decode(buffer);
             int smeltingTime = buffer.readVarInt();
             int fuelPerTick = buffer.readVarInt();
-            return new SmeltingRecipe(id, inputItems, output, smeltingTime, fuelPerTick);
+            return new SmeltingRecipe(inputItems, output, smeltingTime, fuelPerTick);
+        }
+
+        private static void toNetwork(RegistryFriendlyByteBuf buffer, SmeltingRecipe recipe)
+        {
+            buffer.writeVarInt(recipe.inputItems.size());
+            for (Material material : recipe.inputItems) Material.STREAM_CODEC.encode(buffer, material);
+            ItemStack.STREAM_CODEC.encode(buffer, recipe.output);
+            buffer.writeVarInt(recipe.smeltingTime);
+            buffer.writeVarInt(recipe.fuelPerTick);
+        }
+    }
+
+    public static record Material(Ingredient ingredient, int count) implements Predicate<ItemStack>
+    {
+        public static final Codec<Material> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+                Ingredient.CODEC.fieldOf("ingredient").forGetter(Material::ingredient),
+                Codec.INT.fieldOf("count").forGetter(Material::count)
+        ).apply(instance, Material::new));
+
+        public static final StreamCodec<RegistryFriendlyByteBuf, Material> STREAM_CODEC = StreamCodec.composite(
+                Ingredient.CONTENTS_STREAM_CODEC, Material::ingredient,
+                ByteBufCodecs.INT, Material::count,
+                Material::new
+        );
+
+        public static Material of(Ingredient ingredient, int count)
+        {
+            return new Material(ingredient, count);
         }
 
         @Override
-        public void toNetwork(FriendlyByteBuf buffer, SmeltingRecipe recipe)
+        public boolean test(ItemStack itemStack)
         {
-            buffer.writeVarInt(recipe.inputItems.size());
-            for (Ingredient ingredient : recipe.inputItems) ingredient.toNetwork(buffer);
-            buffer.writeItem(recipe.output);
-            buffer.writeInt(recipe.smeltingTime);
-            buffer.writeInt(recipe.fuelPerTick);
+            return ingredient.test(itemStack) && itemStack.getCount() >= count;
         }
     }
 }

@@ -9,6 +9,7 @@ import mezz.jei.api.registration.IRecipeRegistration;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeManager;
 import sk.alloy_smelter.AlloySmelter;
 import sk.alloy_smelter.integration.jei.SmeltingRecipeCategory;
@@ -34,7 +35,7 @@ public class JEIPlugin implements IModPlugin {
     public void registerRecipes(IRecipeRegistration registration) {
         RecipeManager recipeManager = Minecraft.getInstance().level.getRecipeManager();
 
-        List<SmeltingRecipe> recipes = recipeManager.getAllRecipesFor(SmeltingRecipe.Type.INSTANCE);
+        List<SmeltingRecipe> recipes = recipeManager.getAllRecipesFor(RecipeTypes.SMELTING.get()).stream().map(RecipeHolder::value).toList();
         registration.addRecipes(SmeltingRecipeCategory.SMELTING_RECIPE_TYPE, recipes);
     }
 

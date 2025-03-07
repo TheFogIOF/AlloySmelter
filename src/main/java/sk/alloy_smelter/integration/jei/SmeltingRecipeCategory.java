@@ -16,10 +16,14 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.Ingredient;
 import sk.alloy_smelter.AlloySmelter;
 import sk.alloy_smelter.recipe.SmeltingRecipe;
 import sk.alloy_smelter.registry.Blocks;
 import sk.alloy_smelter.screen.ForgeControllerMenu;
+
+import java.util.Arrays;
+import java.util.List;
 
 public class SmeltingRecipeCategory implements IRecipeCategory<SmeltingRecipe> {
     public static final ResourceLocation UID = ResourceLocation.fromNamespaceAndPath(AlloySmelter.MOD_ID, "smelting");
@@ -64,8 +68,18 @@ public class SmeltingRecipeCategory implements IRecipeCategory<SmeltingRecipe> {
     @Override
     public void setRecipe(IRecipeLayoutBuilder builder, SmeltingRecipe recipe, IFocusGroup focuses) {
         builder.addSlot(RecipeIngredientRole.INPUT, 20, 45).addItemStack(new ItemStack(Items.COAL));
-        builder.addSlot(RecipeIngredientRole.INPUT, 62, 25).addIngredients(recipe.getIngredients().get(0));
-        if (recipe.getIngredients().size() > 1) builder.addSlot(RecipeIngredientRole.INPUT, 62, 45).addIngredients(recipe.getIngredients().get(1));
+        builder.addSlot(RecipeIngredientRole.INPUT, 62, 25).addIngredients(recipe.getMaterials().get(0).ingredient());
+        if (recipe.getMaterials().size() > 1) {
+            Ingredient ingredient = Ingredient.EMPTY;
+            for (int i = 0; i < recipe.getMaterials().get(1).ingredient().getItems().length; i++)
+            {
+                ItemStack[] itemStacks = new ItemStack[recipe.getMaterials().get(1).ingredient().getItems().length];
+                itemStacks[i] = recipe.getMaterials().get(1).ingredient().getItems()[i];
+                itemStacks[i].setCount(recipe.getMaterials().get(1).count());
+                ingredient = Ingredient.of(itemStacks);
+            }
+            builder.addSlot(RecipeIngredientRole.INPUT, 62, 45).addIngredients(ingredient);
+        }
         builder.addSlot(RecipeIngredientRole.OUTPUT, 120, 35).addItemStack(recipe.getOutput());
     }
 
@@ -75,6 +89,7 @@ public class SmeltingRecipeCategory implements IRecipeCategory<SmeltingRecipe> {
         arrow.draw(guiGraphics, 83, 35);
         guiGraphics.pose().pushPose();
         guiGraphics.pose().scale(0.5f,0.5f,0.5f);
+        guiGraphics.drawCenteredString(Minecraft.getInstance().font, recipe.getSmeltingTime()/20 + " ⌚/s", 189, 110, 0xFFFFFF);
         guiGraphics.drawCenteredString(Minecraft.getInstance().font, recipe.fuelPerTick() + " \uD83D\uDD25/tick", 56, 130, 0xFFFFFF);
         guiGraphics.pose().popPose();
     }
