@@ -1,9 +1,7 @@
 package sk.alloy_smelter.registry;
 
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.crafting.RecipeSerializer;
-import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import sk.alloy_smelter.AlloySmelter;
 import sk.alloy_smelter.recipe.SmeltingRecipe;

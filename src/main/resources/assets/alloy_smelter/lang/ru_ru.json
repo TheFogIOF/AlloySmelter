@@ -4,5 +4,6 @@
   "language.region": "Russian Federation",
   "block.alloy_smelter.forge_controller": "Контроллер плавильни",
   "block.alloy_smelter.alloy_smelter_controller": "Контроллер плавильни",
-  "gui.alloy_smelter.alloy_smelter_controller": "Выплавка"
+  "gui.alloy_smelter.alloy_smelter_controller": "Выплавка",
+  "message.alloy_smelter.invalid_multiblock": "Есть ошибки в составлении многоблочной структуры"
 }

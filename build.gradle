@@ -21,6 +21,7 @@ repositories {
             name = "ModMaven"
             url = "https://modmaven.dev"
         }
+        maven { url "https://maven.shedaniel.me" }
 
 }
 
@@ -111,7 +112,10 @@ dependencies {
 
     compileOnly "mezz.jei:jei-${minecraft_version}-common-api:${jei_version}"
     compileOnly("mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}")
-    runtimeOnly("mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}")
+    //runtimeOnly("mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}")
+
+    compileOnly "me.shedaniel:RoughlyEnoughItems-api-neoforge:16.0.799"
+    runtimeOnly "me.shedaniel:RoughlyEnoughItems-neoforge:16.0.799"
 
     // Example mod dependency using a mod jar from ./libs with a flat dir repository
     // This maps to ./libs/coolmod-${mc_version}-${coolmod_version}.jar

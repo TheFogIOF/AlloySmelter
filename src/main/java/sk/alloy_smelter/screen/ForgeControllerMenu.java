@@ -1,6 +1,5 @@
 package sk.alloy_smelter.screen;
 
-import net.minecraft.core.Direction;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -9,11 +8,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import net.neoforged.neoforge.items.SlotItemHandler;
-import net.neoforged.neoforge.items.wrapper.RecipeWrapper;
+import org.jetbrains.annotations.NotNull;
 import sk.alloy_smelter.block.ForgeControllerBlockEntity;
 import sk.alloy_smelter.registry.Blocks;
 import sk.alloy_smelter.recipe.SmeltingRecipe;
@@ -57,7 +54,7 @@ public class ForgeControllerMenu extends AbstractContainerMenu {
 
         Slot sourceSlot = slots.get(index);
         int slotCount = lastSlotIndex + 1;
-        if (sourceSlot == null || !sourceSlot.hasItem()) return ItemStack.EMPTY;
+        if (!sourceSlot.hasItem()) return ItemStack.EMPTY;
         ItemStack sourceStack = sourceSlot.getItem();
         ItemStack copyOfSourceStack = sourceStack.copy();
         if (index < 36) {
@@ -82,9 +79,9 @@ public class ForgeControllerMenu extends AbstractContainerMenu {
     }
 
     @Override
-    public boolean stillValid(Player pPlayer) {
+    public boolean stillValid(Player player) {
         return stillValid(ContainerLevelAccess.create(level, blockEntity.getBlockPos()),
-                pPlayer, Blocks.FORGE_CONTROLLER.get());
+                player, Blocks.FORGE_CONTROLLER.get());
     }
 
     private void addPlayerInventory(Inventory playerInventory) {
