@@ -276,8 +276,6 @@ public class ForgeControllerBlockEntity extends SyncedBlockEntity implements Men
         if (forgeController.fuelTime > 0) forgeController.fuelTime--;
     }
 
-
-
     public Optional<RecipeHolder<SmeltingRecipe>> getMatchingRecipe() {
         if (level == null) return Optional.empty();
         ItemStackHandler container = new ItemStackHandler(this.inventory.getSlots());
@@ -294,7 +292,9 @@ public class ForgeControllerBlockEntity extends SyncedBlockEntity implements Men
             if (this.inventory.getStackInSlot(OUTPUT_SLOT).getCount() + recipe.getOutput().getCount() <= recipe.getOutput().getMaxStackSize())
                 if (recipe.getOutput().getItem() == this.inventory.getStackInSlot(OUTPUT_SLOT).getItem() || this.inventory.getStackInSlot(OUTPUT_SLOT) == ItemStack.EMPTY)
                     if (recipe.getMaterials().size() > 1) {
-                        if (this.inventory.getStackInSlot(INPUT_SLOTS[0]).getCount() >= recipe.getMaterials().get(0).count()
+                        if (recipe.getMaterials().get(0).ingredient().test(this.inventory.getStackInSlot(INPUT_SLOTS[0]))
+                                && recipe.getMaterials().get(1).ingredient().test(this.inventory.getStackInSlot(INPUT_SLOTS[1]))
+                                && this.inventory.getStackInSlot(INPUT_SLOTS[0]).getCount() >= recipe.getMaterials().get(0).count()
                                 && this.inventory.getStackInSlot(INPUT_SLOTS[1]).getCount() >= recipe.getMaterials().get(1).count())
                             return true;
                     } else {

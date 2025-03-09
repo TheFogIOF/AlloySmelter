@@ -64,17 +64,24 @@ public class SmeltingCategoryJEI implements IRecipeCategory<SmeltingRecipe> {
     @Override
     public void setRecipe(IRecipeLayoutBuilder builder, SmeltingRecipe recipe, IFocusGroup focuses) {
         builder.addSlot(RecipeIngredientRole.INPUT, 20, 45).addItemStack(new ItemStack(Items.COAL));
-        builder.addSlot(RecipeIngredientRole.INPUT, 62, 25).addIngredients(recipe.getMaterials().get(0).ingredient());
+        Ingredient ingredient_0 = Ingredient.EMPTY;
+        for (int i = 0; i < recipe.getMaterials().get(0).ingredient().getItems().length; i++) {
+            ItemStack[] itemStacks = new ItemStack[recipe.getMaterials().get(0).ingredient().getItems().length];
+            itemStacks[i] = recipe.getMaterials().get(0).ingredient().getItems()[i];
+            itemStacks[i].setCount(recipe.getMaterials().get(0).count());
+            ingredient_0 = Ingredient.of(itemStacks);
+        }
+        builder.addSlot(RecipeIngredientRole.INPUT, 62, 25).addIngredients(ingredient_0);
         if (recipe.getMaterials().size() > 1) {
-            Ingredient ingredient = Ingredient.EMPTY;
+            Ingredient ingredient_1 = Ingredient.EMPTY;
             for (int i = 0; i < recipe.getMaterials().get(1).ingredient().getItems().length; i++)
             {
                 ItemStack[] itemStacks = new ItemStack[recipe.getMaterials().get(1).ingredient().getItems().length];
                 itemStacks[i] = recipe.getMaterials().get(1).ingredient().getItems()[i];
                 itemStacks[i].setCount(recipe.getMaterials().get(1).count());
-                ingredient = Ingredient.of(itemStacks);
+                ingredient_1 = Ingredient.of(itemStacks);
             }
-            builder.addSlot(RecipeIngredientRole.INPUT, 62, 45).addIngredients(ingredient);
+            builder.addSlot(RecipeIngredientRole.INPUT, 62, 45).addIngredients(ingredient_1);
         }
         builder.addSlot(RecipeIngredientRole.OUTPUT, 120, 35).addItemStack(recipe.getOutput());
     }
