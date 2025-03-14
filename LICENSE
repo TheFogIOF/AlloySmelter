@@ -21,11 +21,6 @@ As such, this is my custom license which should hopefully cover all that:
 - If you have used any code from this project (with the exception of API classes), that project must also be visible source. This allows others to learn from your work.
 - Give proper credit where it's due when copying portions of the code (see above)
 
-#### On the topic of *resources*:
-- Always give credit to original artists/creators
-- Always ask for permission before copying assets
-- Addon mods are allowed to use and remix art & model assets for the sole purpose of being addons. When in doubt, better ask.
-
 #### In summary:
 Please, look at the code and learn from it (where possible). Draw inspiration, be creative, enjoy yourself. Should you find issues, point them out. Have an idea how to fix it? Submit a PR.
 Stealing code or assets isn't cool though. Don't do that.
