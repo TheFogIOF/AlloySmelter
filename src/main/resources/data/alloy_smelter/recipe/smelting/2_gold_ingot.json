@@ -1,0 +1,15 @@
+{
+  "type": "alloy_smelter:smelting",
+  "ingredients": [
+    {
+      "ingredient": "minecraft:raw_gold",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "minecraft:gold_ingot",
+    "count": 1
+  },
+  "smeltingTime": 150,
+  "fuelPerTick": 1
+}
