@@ -8,16 +8,16 @@ Example of json recipe:
   "type": "alloy_smelter:smelting",
   "ingredients": [
     {
-      "item": "minecraft:raw_copper",
+      "ingredient": "minecraft:raw_copper",
       "count": 1
     },
     {
-      "item": "minecraft:raw_iron",
+      "ingredient": "minecraft:raw_iron",
       "count": 2
     }
   ],
   "result": {
-    "item": "minecraft:diamond",
+    "id": "minecraft:diamond",
     "count": 2
   },
   "smeltingTime": 200,
