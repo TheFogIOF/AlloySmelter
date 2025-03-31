@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "aaa",
+    "aba",
+    "aaa"
+  ],
+  "key": {
+    "a": {
+      "item": "minecraft:polished_blackstone"
+    },
+    "b": {
+      "item": "minecraft:blast_furnace"
+    }
+  },
+  "result": {
+    "id": "alloy_smelter:forge_controller_tier2",
+    "count": 1
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "language": "Russian",
+  "language.code": "ru_ru",
+  "language.region": "Russian Federation",
+
+  "block.alloy_smelter.forge_controller_tier1": "Контроллер кузницы из кирпичей",
+  "block.alloy_smelter.forge_controller_tier2": "Контроллер кузницы из полированного чернита",
+  "block.alloy_smelter.forge_controller_tier3": "Контроллер кузницы из эндерняковых кирпичей",
+  "block.alloy_smelter.alloy_smelter_controller": "Контроллер плавильни",
+
+  "gui.alloy_smelter.alloy_smelter_controller": "Выплавка",
+  "gui.alloy_smelter.forge_tier": "Уровень кузни:",
+
+  "message.alloy_smelter.invalid_multiblock": "Есть ошибки в составлении многоблочной структуры",
+
+  "itemGroup.alloy_smelter.alloy_smelter": "Alloy Smelter",
+
+  "rei.alloy_smelter.forge_controller_tier1": "Выплавка (ур. 1)",
+  "rei.alloy_smelter.forge_controller_tier2": "Выплавка (ур. 2)",
+  "rei.alloy_smelter.forge_controller_tier3": "Выплавка (ур. 3)"
+}
