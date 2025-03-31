@@ -21,7 +21,8 @@ Example of json recipe:
     "count": 2
   },
   "smeltingTime": 200,
-  "fuelPerTick": 1
+  "fuelPerTick": 1,
+  "requiredTier": 2
 }
 ```
 
