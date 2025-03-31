@@ -1,9 +1,0 @@
-{
-  "language": "English",
-  "language.code": "en_us",
-  "language.region": "United States",
-  "block.alloy_smelter.forge_controller": "Alloy Smelter Controller",
-  "block.alloy_smelter.alloy_smelter_controller": "Alloy Smelter Controller",
-  "gui.alloy_smelter.alloy_smelter_controller": "Smelting",
-  "message.alloy_smelter.invalid_multiblock": "Invalid Multiblock Configuration"
-}
