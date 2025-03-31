@@ -1,7 +1,13 @@
 package sk.alloy_smelter.screen;
 
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderSet;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.BlockTypes;
 import sk.alloy_smelter.screen.IESlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.*;
@@ -20,6 +26,8 @@ import sk.alloy_smelter.registry.MenuTypes;
 import sk.alloy_smelter.registry.RecipeTypes;
 
 import java.util.Optional;
+
+import static sk.alloy_smelter.registry.Tags.*;
 
 public class ForgeControllerMenu extends AbstractContainerMenu {
 
@@ -81,35 +89,30 @@ public class ForgeControllerMenu extends AbstractContainerMenu {
         return copyOfSourceStack;
     }
 
+    protected static boolean valid(ContainerLevelAccess access, Player player, TagKey<Block> targetBlock) {
+        return (Boolean)access.evaluate((levelPosConsumer, defaultValue) -> {
+            return !levelPosConsumer.getBlockState(defaultValue).is(targetBlock) ? false : player.canInteractWithBlock(defaultValue, 4.0);
+        }, true);
+    }
+
     @Override
     public boolean stillValid(Player player) {
-        return stillValid(ContainerLevelAccess.create(level, blockEntity.getBlockPos()),
-                player, Blocks.FORGE_CONTROLLER.get());
+        return valid(ContainerLevelAccess.create(level, blockEntity.getBlockPos()), player, FORGE_CONTROLLER);
     }
 
     private void addPlayerInventory(Inventory playerInventory) {
-        for (int i = 0; i < 3; ++i) {
-            for (int l = 0; l < 9; ++l) {
-                this.addSlot(new Slot(playerInventory, l + i * 9 + 9, 8 + l * 18, 84 + i * 18));
-            }
-        }
+        for (int i = 0; i < 3; ++i) for (int l = 0; l < 9; ++l) this.addSlot(new Slot(playerInventory, l + i * 9 + 9, 8 + l * 18, 84 + i * 18));
     }
 
     private void addPlayerHotbar(Inventory playerInventory) {
-        for (int i = 0; i < 9; ++i) {
-            this.addSlot(new Slot(playerInventory, i, 8 + i * 18, 142));
-        }
+        for (int i = 0; i < 9; ++i) this.addSlot(new Slot(playerInventory, i, 8 + i * 18, 142));
     }
 
     public boolean isFuel(ItemStack stack) { return stack.getBurnTime(RecipeType.SMELTING, level.fuelValues()) > 0; }
 
-    public boolean isCrafting() {
-        return data.get(0) > 0;
-    }
+    public boolean isCrafting() { return data.get(0) > 0; }
 
-    public boolean isBurning() {
-        return data.get(1) > 0;
-    }
+    public boolean isBurning() { return data.get(2) > 0; }
 
     public int getArrowProgress() {
         int smeltingTime = this.data.get(0);

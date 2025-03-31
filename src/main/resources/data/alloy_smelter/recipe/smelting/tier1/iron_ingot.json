@@ -1,0 +1,16 @@
+{
+  "type": "alloy_smelter:smelting",
+  "ingredients": [
+    {
+      "ingredient": "minecraft:raw_iron",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "minecraft:iron_ingot",
+    "count": 1
+  },
+  "smeltingTime": 140,
+  "fuelPerTick": 1,
+  "requiredTier": 1
+}

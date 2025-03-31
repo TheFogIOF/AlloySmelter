@@ -1,0 +1,6 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "alloy_smelter:block/forge_controller_tier1"
+  }
+}

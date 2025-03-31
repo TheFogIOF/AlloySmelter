@@ -6,7 +6,10 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.Containers;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.SimpleContainer;
@@ -17,6 +20,7 @@ import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -25,8 +29,10 @@ import net.neoforged.neoforge.capabilities.*;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import net.neoforged.neoforge.items.wrapper.RecipeWrapper;
+import org.jetbrains.annotations.Debug;
 import org.jetbrains.annotations.Nullable;
 import sk.alloy_smelter.AlloySmelter;
+import sk.alloy_smelter.recipe.CustomRecipeWrapper;
 import sk.alloy_smelter.recipe.SmeltingRecipe;
 import sk.alloy_smelter.registry.BlockEntities;
 import sk.alloy_smelter.registry.RecipeTypes;
@@ -40,15 +46,16 @@ import java.util.Optional;
 public class ForgeControllerBlockEntity extends SyncedBlockEntity implements MenuProvider {
     private final ItemStackHandler inventory = new ItemStackHandler(4) {
         @Override
-        protected void onContentsChanged(int slot) {
-            inventoryChanged();
-        }
+        protected void onContentsChanged(int slot) { inventoryChanged(); }
     };
 
     private static final int FUEL_SLOT = 0;
     private static final int[] INPUT_SLOTS = {1, 2};
     private static final int OUTPUT_SLOT = 3;
 
+    private static final int FORGE_TIERS = 3;
+
+    private final int tier;
     private final List<BlockPos> multiblockPositions;
     private final Direction facing;
 
@@ -64,12 +71,13 @@ public class ForgeControllerBlockEntity extends SyncedBlockEntity implements Men
     private int fuelTime;
     private int burnedFuelTime;
 
-    private final RecipeManager.CachedCheck<RecipeWrapper, SmeltingRecipe> quickCheck;
+    private final RecipeManager.CachedCheck<CustomRecipeWrapper, SmeltingRecipe> quickCheck;
 
     public ForgeControllerBlockEntity(BlockPos position, BlockState state) {
         super(BlockEntities.FORGE_CONTROLLER_BLOCK_ENTITY.get(), position, state);
         facing = state.getValue(ForgeControllerBlock.FACING);
         multiblockPositions = generateMultiblock(position, state.getValue(ForgeControllerBlock.FACING));
+        tier = ((ForgeControllerBlock) state.getBlock()).tier;
 
         this.inputFrontHandler = createHopperFrontItemHandler(inventory);
         this.inputLeftHandler = createHopperLeftItemHandler(inventory);
@@ -299,12 +307,27 @@ public class ForgeControllerBlockEntity extends SyncedBlockEntity implements Men
         if (forgeController.fuelTime > 0) forgeController.fuelTime--;
     }
 
+    public static int findNumber(ArrayList<Integer> array, int target) {
+        int max = Integer.MIN_VALUE;
+        for (int num : array) {
+            if (num == target) return target;
+            if (num > max) max = num;
+        }
+        return max;
+    }
+
     public Optional<RecipeHolder<SmeltingRecipe>> getMatchingRecipe(ServerLevel serverLevel) {
         if (level == null) return Optional.empty();
         ItemStackHandler container = new ItemStackHandler(this.inventory.getSlots());
-        for (int i = 0; i < INPUT_SLOTS.length; i++)
-            container.setStackInSlot(i, this.inventory.getStackInSlot(INPUT_SLOTS[i]));
-        return quickCheck.getRecipeFor(new RecipeWrapper(container), serverLevel);
+        for (int i = 0; i < INPUT_SLOTS.length; i++) container.setStackInSlot(i, this.inventory.getStackInSlot(INPUT_SLOTS[i]));
+
+        ArrayList<RecipeHolder<SmeltingRecipe>> recipes = new ArrayList<>();
+        ArrayList<Integer> recipeTiers = new ArrayList<>();
+        for (int i = 1; i <= FORGE_TIERS; i++) quickCheck.getRecipeFor(new CustomRecipeWrapper(container, i), serverLevel).ifPresent(recipes::add);
+        recipes.stream().forEach(recipe -> recipeTiers.add(recipe.value().getRequiredTier()));
+        int recipeTier = findNumber(recipeTiers, this.tier);
+
+        return quickCheck.getRecipeFor(new CustomRecipeWrapper(container, recipeTier), serverLevel);
     }
 
     protected boolean canSmelt(SmeltingRecipe recipe) {
@@ -312,32 +335,32 @@ public class ForgeControllerBlockEntity extends SyncedBlockEntity implements Men
         output.isEmpty();
 
         if (this.fuelTime > 0)
-            if (this.inventory.getStackInSlot(OUTPUT_SLOT).getCount() + recipe.getOutput().getCount() <= recipe.getOutput().getMaxStackSize())
-                if (recipe.getOutput().getItem() == this.inventory.getStackInSlot(OUTPUT_SLOT).getItem() || this.inventory.getStackInSlot(OUTPUT_SLOT) == ItemStack.EMPTY)
-                    if (recipe.getMaterials().size() > 1) {
-                        if (recipe.getMaterials().get(0).ingredient().test(this.inventory.getStackInSlot(INPUT_SLOTS[0]))
-                                && recipe.getMaterials().get(1).ingredient().test(this.inventory.getStackInSlot(INPUT_SLOTS[1]))
-                                && this.inventory.getStackInSlot(INPUT_SLOTS[0]).getCount() >= recipe.getMaterials().get(0).count()
-                                && this.inventory.getStackInSlot(INPUT_SLOTS[1]).getCount() >= recipe.getMaterials().get(1).count())
-                            return true;
-                    } else {
-                        if (this.inventory.getStackInSlot(INPUT_SLOTS[0]).getCount() >= recipe.getMaterials().get(0).count()
-                                || this.inventory.getStackInSlot(INPUT_SLOTS[1]).getCount() >= recipe.getMaterials().get(0).count())
-                            return true;
-                    }
+            if (this.tier >= recipe.getRequiredTier())
+                if (this.inventory.getStackInSlot(OUTPUT_SLOT).getCount() + recipe.getOutput().getCount() <= recipe.getOutput().getMaxStackSize())
+                    if (recipe.getOutput().getItem() == this.inventory.getStackInSlot(OUTPUT_SLOT).getItem() || this.inventory.getStackInSlot(OUTPUT_SLOT) == ItemStack.EMPTY)
+                        if (recipe.getMaterials().size() > 1) {
+                            if (recipe.getMaterials().get(0).ingredient().test(this.inventory.getStackInSlot(INPUT_SLOTS[0]))
+                                    && recipe.getMaterials().get(1).ingredient().test(this.inventory.getStackInSlot(INPUT_SLOTS[1]))
+                                    && this.inventory.getStackInSlot(INPUT_SLOTS[0]).getCount() >= recipe.getMaterials().get(0).count()
+                                    && this.inventory.getStackInSlot(INPUT_SLOTS[1]).getCount() >= recipe.getMaterials().get(1).count())
+                                return true;
+                        } else {
+                            if (this.inventory.getStackInSlot(INPUT_SLOTS[0]).getCount() >= recipe.getMaterials().get(0).count()
+                                    || this.inventory.getStackInSlot(INPUT_SLOTS[1]).getCount() >= recipe.getMaterials().get(0).count())
+                                return true;
+                        }
         return false;
     }
 
-    public ItemStackHandler getInventory() {
-        return inventory;
-    }
+    public ItemStackHandler getInventory() { return inventory; }
 
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean verifyMultiblock() {
         BlockState blockBelowController = level.getBlockState(this.multiblockPositions.get(0));
-        if (!blockBelowController.is(Tags.ALLOY_SMELTER_BLOCKS) && !blockBelowController.is(Blocks.HOPPER)) return false;
+        TagKey<Block> ALLOY_SMELTER_BLOCKS = BlockTags.create(ResourceLocation.fromNamespaceAndPath(AlloySmelter.MOD_ID, "alloy_smelter_blocks_tier" + this.tier));
+        if (!blockBelowController.is(ALLOY_SMELTER_BLOCKS) && !blockBelowController.is(Blocks.HOPPER)) return false;
         for (int i = 1; i < this.multiblockPositions.size(); i++)
-            if (!(level.getBlockState(this.multiblockPositions.get(i)).is(Tags.ALLOY_SMELTER_BLOCKS))) return false;
+            if (!(level.getBlockState(this.multiblockPositions.get(i)).is(ALLOY_SMELTER_BLOCKS))) return false;
         return true;
     }
 

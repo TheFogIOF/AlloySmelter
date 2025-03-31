@@ -1,7 +1,10 @@
 package sk.alloy_smelter.block;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -13,6 +16,7 @@ import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -20,23 +24,45 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.network.chat.Component;
+import net.neoforged.neoforge.registries.DeferredRegister;
 import org.jetbrains.annotations.Nullable;
+import sk.alloy_smelter.AlloySmelter;
 import sk.alloy_smelter.registry.BlockEntities;
+
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class ForgeControllerBlock extends BaseEntityBlock implements EntityBlock
 {
-    public static final MapCodec<ForgeControllerBlock> CODEC = simpleCodec(ForgeControllerBlock::new);
+    public static final DeferredRegister<MapCodec<? extends Block>> REGISTRAR = DeferredRegister.create(BuiltInRegistries.BLOCK_TYPE, AlloySmelter.MOD_ID);
+    public static final Supplier<MapCodec<ForgeControllerBlock>> CODEC = REGISTRAR.register(
+            "simple",
+            () -> RecordCodecBuilder.mapCodec(inst ->
+                    inst.group(
+                            BlockBehaviour.propertiesCodec(),
+                            Codec.INT.fieldOf("tier").forGetter(ForgeControllerBlock::getTier)
+                    ).apply(inst, ForgeControllerBlock::new)
+            )
+    );
     public static final EnumProperty<Direction> FACING = HorizontalDirectionalBlock.FACING;
     public static final BooleanProperty LIT = BlockStateProperties.LIT;
 
-    public ForgeControllerBlock(Properties properties) {
+    public final int tier;
+
+    public int getTier()
+    {
+        return this.tier;
+    }
+
+    public ForgeControllerBlock(Properties properties, int tier) {
         super(properties);
         this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(LIT, false));
+        this.tier = tier;
     }
 
     @Override
     protected MapCodec<? extends BaseEntityBlock> codec() {
-        return CODEC;
+        return CODEC.get();
     }
 
     @Override

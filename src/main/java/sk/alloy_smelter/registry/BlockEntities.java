@@ -17,7 +17,9 @@ public class BlockEntities {
             BLOCK_ENTITIES.register("forge_controller_block_entity",
                 () -> new BlockEntityType<>(
                         ForgeControllerBlockEntity::new,
-                        Blocks.FORGE_CONTROLLER.get()
+                        Blocks.FORGE_CONTROLLER_TIER1.get(),
+                        Blocks.FORGE_CONTROLLER_TIER2.get(),
+                        Blocks.FORGE_CONTROLLER_TIER3.get()
                 )
             );
 

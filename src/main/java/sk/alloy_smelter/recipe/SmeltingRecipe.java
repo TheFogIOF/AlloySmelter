@@ -15,6 +15,7 @@ import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.common.util.RecipeMatcher;
 import net.neoforged.neoforge.items.wrapper.RecipeWrapper;
+import sk.alloy_smelter.AlloySmelter;
 import sk.alloy_smelter.registry.RecipeTypes;
 import sk.alloy_smelter.registry.RecipeSerializers;
 
@@ -23,47 +24,45 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 
-public class SmeltingRecipe implements Recipe<RecipeWrapper> {
+public class SmeltingRecipe implements Recipe<CustomRecipeWrapper> {
     private final NonNullList<Material> inputItems;
     private final ItemStack output;
     private final int smeltingTime;
     private final int fuelPerTick;
+    private final int requiredTier;
     private PlacementInfo info;
 
-    public SmeltingRecipe(NonNullList<Material> inputItems, ItemStack output, int smeltingTime, int fuelPerTick) {
+    public SmeltingRecipe(NonNullList<Material> inputItems, ItemStack output, int smeltingTime, int fuelPerTick, int requiredTier) {
         this.inputItems = inputItems;
         this.output = output;
         this.smeltingTime = smeltingTime;
         this.fuelPerTick = fuelPerTick;
+        this.requiredTier = requiredTier;
     }
 
-    public int getSmeltingTime() {
-        return this.smeltingTime;
-    }
+    public int getSmeltingTime() { return this.smeltingTime; }
 
     public int fuelPerTick() {
         return this.fuelPerTick;
     }
 
-    public ItemStack getOutput() {
-        return getResultItem(null);
-    }
+    public int getRequiredTier() { return  this.requiredTier; }
 
-    public NonNullList<Material> getMaterials() {
-        return this.inputItems;
-    }
+    public ItemStack getOutput() { return getResultItem(null); }
+
+    public NonNullList<Material> getMaterials() { return this.inputItems; }
 
     public ItemStack getResultItem(HolderLookup.Provider provider) {
         return this.output.copy();
     }
 
     @Override
-    public ItemStack assemble(RecipeWrapper recipeWrapper, HolderLookup.Provider provider) {
+    public ItemStack assemble(CustomRecipeWrapper recipeWrapper, HolderLookup.Provider provider) {
         return this.output.copy();
     }
 
     @Override
-    public boolean matches(RecipeWrapper recipeWrapper, Level level) {
+    public boolean matches(CustomRecipeWrapper recipeWrapper, Level level) {
         java.util.List<ItemStack> inputs = new java.util.ArrayList<>();
         int i = 0;
 
@@ -74,16 +73,17 @@ public class SmeltingRecipe implements Recipe<RecipeWrapper> {
                 inputs.add(itemstack);
             }
         }
-        return i == this.inputItems.size() && RecipeMatcher.findMatches(inputs, this.inputItems) != null;
+
+        return recipeWrapper.getTier() == this.getRequiredTier() && i == this.inputItems.size() && RecipeMatcher.findMatches(inputs, this.inputItems) != null;
     }
 
     @Override
-    public RecipeSerializer<? extends Recipe<RecipeWrapper>> getSerializer() {
-        return (RecipeSerializer<? extends Recipe<RecipeWrapper>>) RecipeSerializers.SMELTING.get();
+    public RecipeSerializer<? extends Recipe<CustomRecipeWrapper>> getSerializer() {
+        return (RecipeSerializer<? extends Recipe<CustomRecipeWrapper>>) RecipeSerializers.SMELTING.get();
     }
 
     @Override
-    public RecipeType<? extends Recipe<RecipeWrapper>> getType() {
+    public RecipeType<? extends Recipe<CustomRecipeWrapper>> getType() {
         return RecipeTypes.SMELTING.get();
     }
 
@@ -109,10 +109,9 @@ public class SmeltingRecipe implements Recipe<RecipeWrapper> {
                 NonNullList.codecOf(Material.CODEC).fieldOf("ingredients").forGetter(SmeltingRecipe::getMaterials),
                 ItemStack.CODEC.fieldOf("result").forGetter(SmeltingRecipe::getOutput),
                 Codec.INT.optionalFieldOf("smeltingTime", 200).forGetter(SmeltingRecipe::getSmeltingTime),
-                Codec.INT.optionalFieldOf("fuelPerTick", 1).forGetter(SmeltingRecipe::fuelPerTick)
+                Codec.INT.optionalFieldOf("fuelPerTick", 1).forGetter(SmeltingRecipe::fuelPerTick),
+                Codec.INT.optionalFieldOf("requiredTier", 1).forGetter(SmeltingRecipe::getRequiredTier)
         ).apply(inst, SmeltingRecipe::new));
-
-        //public static final StreamCodec<RegistryFriendlyByteBuf, SmeltingRecipe> STREAM_CODEC = StreamCodec.of(SmeltingRecipe.Serializer::toNetwork, SmeltingRecipe.Serializer::fromNetwork);
 
         public static final StreamCodec<RegistryFriendlyByteBuf, SmeltingRecipe> STREAM_CODEC =
                 StreamCodec.composite(
@@ -120,9 +119,9 @@ public class SmeltingRecipe implements Recipe<RecipeWrapper> {
                         ItemStack.STREAM_CODEC, SmeltingRecipe::getOutput,
                         ByteBufCodecs.INT, SmeltingRecipe::getSmeltingTime,
                         ByteBufCodecs.INT, SmeltingRecipe::fuelPerTick,
+                        ByteBufCodecs.INT, SmeltingRecipe::getRequiredTier,
                         SmeltingRecipe::new
                 );
-
 
         @Override
         public MapCodec<SmeltingRecipe> codec() {
@@ -132,25 +131,6 @@ public class SmeltingRecipe implements Recipe<RecipeWrapper> {
         @Override
         public StreamCodec<RegistryFriendlyByteBuf, SmeltingRecipe> streamCodec() {
             return STREAM_CODEC;
-        }
-
-        private static SmeltingRecipe fromNetwork(RegistryFriendlyByteBuf buffer) {
-            int i = buffer.readVarInt();
-            NonNullList<Material> inputItems = NonNullList.withSize(i, Material.of(Ingredient.of(ItemStack.EMPTY.getItem()), 0));
-            inputItems.replaceAll(ignored -> Material.STREAM_CODEC.decode(buffer));
-            ItemStack output = ItemStack.STREAM_CODEC.decode(buffer);
-            int smeltingTime = buffer.readVarInt();
-            int fuelPerTick = buffer.readVarInt();
-            return new SmeltingRecipe(inputItems, output, smeltingTime, fuelPerTick);
-        }
-
-        private static void toNetwork(RegistryFriendlyByteBuf buffer, SmeltingRecipe recipe)
-        {
-            buffer.writeVarInt(recipe.inputItems.size());
-            for (Material material : recipe.inputItems) Material.STREAM_CODEC.encode(buffer, material);
-            ItemStack.STREAM_CODEC.encode(buffer, recipe.output);
-            buffer.writeVarInt(recipe.smeltingTime);
-            buffer.writeVarInt(recipe.fuelPerTick);
         }
     }
 

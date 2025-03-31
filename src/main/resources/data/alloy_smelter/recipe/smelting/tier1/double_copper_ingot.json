@@ -1,0 +1,20 @@
+{
+  "type": "alloy_smelter:smelting",
+  "ingredients": [
+    {
+      "ingredient": "minecraft:raw_copper",
+      "count": 1
+    },
+    {
+      "ingredient": "minecraft:raw_copper",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "minecraft:copper_ingot",
+    "count": 2
+  },
+  "smeltingTime": 140,
+  "fuelPerTick": 1,
+  "requiredTier": 1
+}

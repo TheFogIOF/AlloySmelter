@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "a": "minecraft:end_stone_bricks",
+    "b": "minecraft:blast_furnace"
+  },
+  "pattern": [
+    "aaa",
+    "aba",
+    "aaa"
+  ],
+  "result": {
+    "id": "alloy_smelter:forge_controller_tier3",
+    "count": 1
+  }
+}
