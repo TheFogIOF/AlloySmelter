@@ -1,0 +1,6 @@
+{
+  "parent": "alloy_smelter:block/forge_controller_tier1",
+  "textures": {
+    "front": "alloy_smelter:block/bricks_forge_controller_front_on"
+  }
+}
