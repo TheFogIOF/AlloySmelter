@@ -5,24 +5,29 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import sk.alloy_smelter.AlloySmelter;
 import sk.alloy_smelter.block.ForgeControllerBlock;
 
 import java.util.function.Supplier;
+import java.util.function.ToIntFunction;
 
 public class Blocks {
     public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(BuiltInRegistries.BLOCK, AlloySmelter.MOD_ID);
 
     public static final Supplier<Block> FORGE_CONTROLLER_TIER1 = registerBlock("forge_controller_tier1",
-() -> new ForgeControllerBlock(BlockBehaviour.Properties.ofFullCopy(net.minecraft.world.level.block.Blocks.BLACKSTONE), 1));
+() -> new ForgeControllerBlock(BlockBehaviour.Properties.ofFullCopy(net.minecraft.world.level.block.Blocks.BLACKSTONE).lightLevel(litBlockEmission(12)), 1));
     public static final Supplier<Block> FORGE_CONTROLLER_TIER2 = registerBlock("forge_controller_tier2",
-            () -> new ForgeControllerBlock(BlockBehaviour.Properties.ofFullCopy(net.minecraft.world.level.block.Blocks.BLACKSTONE), 2));
+            () -> new ForgeControllerBlock(BlockBehaviour.Properties.ofFullCopy(net.minecraft.world.level.block.Blocks.BLACKSTONE).lightLevel(litBlockEmission(12)), 2));
     public static final Supplier<Block> FORGE_CONTROLLER_TIER3 = registerBlock("forge_controller_tier3",
-            () -> new ForgeControllerBlock(BlockBehaviour.Properties.ofFullCopy(net.minecraft.world.level.block.Blocks.BLACKSTONE), 3));
+            () -> new ForgeControllerBlock(BlockBehaviour.Properties.ofFullCopy(net.minecraft.world.level.block.Blocks.BLACKSTONE).lightLevel(litBlockEmission(12)), 3));
 
-
+    private static ToIntFunction<BlockState> litBlockEmission(int lightValue) {
+        return blockState -> blockState.getValue(BlockStateProperties.LIT) ? lightValue : 0;
+    }
 
     private static <T extends Block> Supplier<T> registerBlock(String name, Supplier<T> block) {
         Supplier<T> toReturn = BLOCKS.register(name, block);

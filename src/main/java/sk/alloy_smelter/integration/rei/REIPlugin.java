@@ -8,6 +8,7 @@ import me.shedaniel.rei.forge.REIPluginClient;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeManager;
+import net.neoforged.neoforge.client.event.RenderTooltipEvent;
 import sk.alloy_smelter.integration.rei.smelting.*;
 import sk.alloy_smelter.recipe.SmeltingRecipe;
 import sk.alloy_smelter.registry.Blocks;
@@ -32,7 +33,7 @@ public class REIPlugin implements REIClientPlugin {
 
     @Override
     public void registerDisplays(DisplayRegistry registry) {
-        RecipeManager recipeManager = Minecraft.getInstance().getSingleplayerServer().getRecipeManager();
+        RecipeManager recipeManager = registry.getRecipeManager();
         Stream<RecipeHolder<?>> allRecipes = recipeManager.getRecipes().stream();
 
         List<RecipeHolder<SmeltingRecipe>> smeltingRecipes = new ArrayList<>();
