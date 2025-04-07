@@ -24,7 +24,7 @@ import sk.alloy_smelter.registry.Blocks;
 public class JEICategorySmeltingT1 implements IRecipeCategory<SmeltingRecipe> {
     public static final ResourceLocation UID = ResourceLocation.fromNamespaceAndPath(AlloySmelter.MOD_ID, "smelting_tier1");
     public static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(AlloySmelter.MOD_ID,
-            "textures/gui/alloy_smelter.png");
+            "textures/gui/jei_alloy_smelter.png");
 
     public static final RecipeType<SmeltingRecipe> SMELTING_RECIPE_TYPE = new RecipeType<>(UID, SmeltingRecipe.class);
 

@@ -6,6 +6,8 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.Containers;
@@ -232,6 +234,7 @@ public class ForgeControllerBlockEntity extends SyncedBlockEntity implements Men
     public static void clientTick(Level level, BlockPos blockPos, BlockState blockState, ForgeControllerBlockEntity forgeController) {
         if (!forgeController.verifyMultiblock()) return;
         if (!blockState.getValue(ForgeControllerBlock.LIT)) return;
+        if (level.random.nextInt(10) == 0) level.playLocalSound((double)blockPos.getX() + 0.5, (double)blockPos.getY() + 0.5, (double)blockPos.getZ() + 0.5, SoundEvents.BLASTFURNACE_FIRE_CRACKLE, SoundSource.BLOCKS, 0.3F + level.random.nextFloat(), level.random.nextFloat() * 0.7F + 0.5F, false);
         if (level.random.nextDouble() > 0.8) {
             double randH = -0.1 + (0.1 + 0.1) * level.random.nextDouble();
             double randW = -0.25 + (0.25 + 0.25) * level.random.nextDouble();
