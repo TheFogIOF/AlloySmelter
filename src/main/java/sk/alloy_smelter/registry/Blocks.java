@@ -9,6 +9,8 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredItem;
@@ -18,6 +20,7 @@ import sk.alloy_smelter.block.ForgeControllerBlock;
 
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.function.ToIntFunction;
 
 import static net.minecraft.resources.ResourceKey.createRegistryKey;
 
@@ -25,16 +28,20 @@ public class Blocks {
     private static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(AlloySmelter.MOD_ID);
 
     public static final DeferredBlock<ForgeControllerBlock> FORGE_CONTROLLER_TIER1 = registerBlock("forge_controller_tier1",
-            registry -> new ForgeControllerBlock(BlockBehaviour.Properties.ofFullCopy(net.minecraft.world.level.block.Blocks.BLACKSTONE).setId(ResourceKey.create(Registries.BLOCK, registry)), 1)
+            registry -> new ForgeControllerBlock(BlockBehaviour.Properties.ofFullCopy(net.minecraft.world.level.block.Blocks.BLACKSTONE).lightLevel(litBlockEmission(12)).setId(ResourceKey.create(Registries.BLOCK, registry)), 1)
     );
 
     public static final DeferredBlock<ForgeControllerBlock> FORGE_CONTROLLER_TIER2 = registerBlock("forge_controller_tier2",
-            registry -> new ForgeControllerBlock(BlockBehaviour.Properties.ofFullCopy(net.minecraft.world.level.block.Blocks.BLACKSTONE).setId(ResourceKey.create(Registries.BLOCK, registry)), 2)
+            registry -> new ForgeControllerBlock(BlockBehaviour.Properties.ofFullCopy(net.minecraft.world.level.block.Blocks.BLACKSTONE).lightLevel(litBlockEmission(12)).setId(ResourceKey.create(Registries.BLOCK, registry)), 2)
     );
 
     public static final DeferredBlock<ForgeControllerBlock> FORGE_CONTROLLER_TIER3 = registerBlock("forge_controller_tier3",
-            registry -> new ForgeControllerBlock(BlockBehaviour.Properties.ofFullCopy(net.minecraft.world.level.block.Blocks.BLACKSTONE).setId(ResourceKey.create(Registries.BLOCK, registry)), 3)
+            registry -> new ForgeControllerBlock(BlockBehaviour.Properties.ofFullCopy(net.minecraft.world.level.block.Blocks.BLACKSTONE).lightLevel(litBlockEmission(12)).setId(ResourceKey.create(Registries.BLOCK, registry)), 3)
     );
+
+    private static ToIntFunction<BlockState> litBlockEmission(int lightValue) {
+        return blockState -> blockState.getValue(BlockStateProperties.LIT) ? lightValue : 0;
+    }
 
     public static <B extends Block> DeferredBlock<B> registerBlock(String name, Function<ResourceLocation, ? extends B> func) {
         DeferredBlock<B> toReturn = BLOCKS.register(name, func);

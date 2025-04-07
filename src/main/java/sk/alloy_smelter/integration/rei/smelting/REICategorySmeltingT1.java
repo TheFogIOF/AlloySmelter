@@ -23,7 +23,7 @@ import java.util.List;
 
 public class REICategorySmeltingT1 implements DisplayCategory<DisplaySmeltingT1> {
     public static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(AlloySmelter.MOD_ID,
-            "textures/gui/alloy_smelter.png");
+            "textures/gui/jei_alloy_smelter.png");
 
     public static final CategoryIdentifier<DisplaySmeltingT1> SMELTING_RECIPE_TYPE =
             CategoryIdentifier.of(AlloySmelter.MOD_ID, "smelting_tier1");

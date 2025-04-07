@@ -42,11 +42,9 @@ public class SmeltingRecipe implements Recipe<CustomRecipeWrapper> {
 
     public int getSmeltingTime() { return this.smeltingTime; }
 
-    public int fuelPerTick() {
-        return this.fuelPerTick;
-    }
+    public int fuelPerTick() { return this.fuelPerTick; }
 
-    public int getRequiredTier() { return  this.requiredTier; }
+    public int getRequiredTier() { return this.requiredTier; }
 
     public ItemStack getOutput() { return getResultItem(null); }
 
