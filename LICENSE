@@ -1,8 +1,7 @@
-FogIOF's License of Common Sense
+FogIOF's License
 ====================================
 
 Here's how it goes: I like making my code visible so that others may learn from it. Reason for that is because I myself learned a lot that way.
-What I don't like is anyone's creative property being stolen, used without credit or commercialized without permission.
 
 As such, this is my custom license which should hopefully cover all that:
 
@@ -13,9 +12,8 @@ As such, this is my custom license which should hopefully cover all that:
 - Write other projects that base on this project and its API (if present) (This means Addons are totally cool)
 
 #### What you *can not* do:
-- Claim any of this code to be your property
 - Redistribute this project without explicit permission of the license holder, TheFogIOF
-- Copy large sections of this code without giving credit
+- Copy large sections of this code without giving credit (this can be done directly in the code in the comment)
 
 #### What you *have to* abide by:
 - If you have used any code from this project (with the exception of API classes), that project must also be visible source. This allows others to learn from your work.
@@ -23,7 +21,6 @@ As such, this is my custom license which should hopefully cover all that:
 
 #### In summary:
 Please, look at the code and learn from it (where possible). Draw inspiration, be creative, enjoy yourself. Should you find issues, point them out. Have an idea how to fix it? Submit a PR.
-Stealing code or assets isn't cool though. Don't do that.
 
 This project is provided "as is", without warranty of any kind, including but not limited to the warranties of merchantability, fitness for a particular purpose or non-infringement.
 The authors or copyright holders are not liable for any claim, damages or other liability, whether in actions of contract, tort or other, arising from, out of or in connection to this project, its use, or related projects.
