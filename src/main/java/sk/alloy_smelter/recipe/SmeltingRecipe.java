@@ -113,15 +113,15 @@ public class SmeltingRecipe implements Recipe<CustomRecipeWrapper> {
 
         @Override
         public SmeltingRecipe fromJson(ResourceLocation id, JsonObject json) {
-            final NonNullList<Ingredient> inputItems = readIngredients(GsonHelper.getAsJsonArray(json, "ingredients"));
+            NonNullList<Ingredient> inputItems = readIngredients(GsonHelper.getAsJsonArray(json, "ingredients"));
 
             if (inputItems.isEmpty()) throw new JsonParseException("No ingredients for recipe");
             else if (inputItems.size() > 2) throw new JsonParseException("Too many ingredients for recipe! The max is 2");
             else {
-                final ItemStack output = CraftingHelper.getItemStack(GsonHelper.getAsJsonObject(json, "result"), true);
-                final int smeltingTime = GsonHelper.getAsInt(json, "smeltingTime", 200);
-                final int fuelPerTick = GsonHelper.getAsInt(json, "fuelPerTick", 1);
-                final int requiredTier = GsonHelper.getAsInt(json, "requiredTier", 1);
+                ItemStack output = CraftingHelper.getItemStack(GsonHelper.getAsJsonObject(json, "result"), true);
+                int smeltingTime = GsonHelper.getAsInt(json, "smeltingTime", 200);
+                int fuelPerTick = GsonHelper.getAsInt(json, "fuelPerTick", 1);
+                int requiredTier = GsonHelper.getAsInt(json, "requiredTier", 1);
 
                 return new SmeltingRecipe(id, inputItems, output, smeltingTime, fuelPerTick, requiredTier);
             }
@@ -131,7 +131,7 @@ public class SmeltingRecipe implements Recipe<CustomRecipeWrapper> {
             NonNullList<Ingredient> nonnulllist = NonNullList.create();
             for (int i = 0; i < ingredientArray.size(); ++i) {
                 JsonObject jsonIngredient = ingredientArray.get(i).getAsJsonObject();
-                Ingredient ingredient = Ingredient.fromJson(jsonIngredient);
+                Ingredient ingredient = Ingredient.fromJson(ingredientArray.get(i));
                 int count = 1; if (jsonIngredient.has("count")) count = GsonHelper.getAsInt(jsonIngredient, "count");
                 ingredient.getItems()[0].setCount(count);
                 if (!ingredient.isEmpty()) nonnulllist.add(ingredient);
@@ -159,9 +159,9 @@ public class SmeltingRecipe implements Recipe<CustomRecipeWrapper> {
             buffer.writeVarInt(recipe.inputItems.size());
             for (Ingredient ingredient : recipe.inputItems) ingredient.toNetwork(buffer);
             buffer.writeItem(recipe.output);
-            buffer.writeInt(recipe.smeltingTime);
-            buffer.writeInt(recipe.fuelPerTick);
-            buffer.writeInt(recipe.requiredTier);
+            buffer.writeVarInt(recipe.smeltingTime);
+            buffer.writeVarInt(recipe.fuelPerTick);
+            buffer.writeVarInt(recipe.requiredTier);
         }
     }
 }
