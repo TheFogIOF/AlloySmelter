@@ -35,6 +35,7 @@ import net.neoforged.neoforge.items.ItemStackHandler;
 import net.neoforged.neoforge.items.wrapper.RecipeWrapper;
 import org.jetbrains.annotations.Nullable;
 import sk.alloy_smelter.AlloySmelter;
+import sk.alloy_smelter.Config;
 import sk.alloy_smelter.recipe.CustomRecipeWrapper;
 import sk.alloy_smelter.recipe.SmeltingRecipe;
 import sk.alloy_smelter.registry.BlockEntities;
@@ -292,29 +293,27 @@ public class ForgeControllerBlockEntity extends SyncedBlockEntity implements Men
 
         if (!forgeController.verifyMultiblock()) return;
 
-        Optional<RecipeHolder<SmeltingRecipe>> recipe = forgeController.getMatchingRecipe();
+        if (forgeController.fuelTime > 0 && Config.ENABLE_PASSIVE_FUEL_CONSUMPTION.get()) forgeController.fuelTime--;
 
-        if (recipe.isPresent() && forgeController.canSmelt(recipe.get().value())) {
-            forgeController.maxSmeltProgress = recipe.get().value().getSmeltingTime();
+        Optional<RecipeHolder<SmeltingRecipe>> recipeHolder = forgeController.getMatchingRecipe();
+
+        if (recipeHolder.isPresent() && forgeController.canSmelt(recipeHolder.get().value())) {
+            SmeltingRecipe recipe = recipeHolder.get().value();
+            forgeController.maxSmeltProgress = recipe.getSmeltingTime();
             forgeController.smeltProgress++;
-            if (forgeController.smeltProgress > recipe.get().value().getSmeltingTime()) {
-                if (recipe.get().value().getMaterials().size() > 1) {
-                    forgeController.inventory.getStackInSlot(INPUT_SLOTS[0]).shrink(recipe.get().value().getMaterials().get(0).count());
-                    forgeController.inventory.getStackInSlot(INPUT_SLOTS[1]).shrink(recipe.get().value().getMaterials().get(1).count());
-                } else {
-                    forgeController.inventory.getStackInSlot(INPUT_SLOTS[0]).shrink(recipe.get().value().getMaterials().get(0).count());
-                    forgeController.inventory.getStackInSlot(INPUT_SLOTS[1]).shrink(recipe.get().value().getMaterials().get(0).count());
-                }
+            if (forgeController.smeltProgress > recipe.getSmeltingTime()) {
                 forgeController.smeltProgress = 0;
-                if (forgeController.inventory.getStackInSlot(OUTPUT_SLOT) == ItemStack.EMPTY) {
-                    forgeController.inventory.setStackInSlot(OUTPUT_SLOT, recipe.get().value().getOutput());
-                } else if (forgeController.inventory.getStackInSlot(OUTPUT_SLOT).getItem() == recipe.get().value().getOutput().getItem()) {
-                    forgeController.inventory.getStackInSlot(OUTPUT_SLOT).grow(recipe.get().value().getOutput().getCount());
-                }
+
+                forgeController.inventory.getStackInSlot(INPUT_SLOTS[0]).shrink(recipe.getMaterials().get(0).count());
+                if (recipe.getMaterials().size() > 1) forgeController.inventory.getStackInSlot(INPUT_SLOTS[1]).shrink(recipe.getMaterials().get(1).count());
+                else forgeController.inventory.getStackInSlot(INPUT_SLOTS[1]).shrink(recipe.getMaterials().get(0).count());
+
+                if (forgeController.inventory.getStackInSlot(OUTPUT_SLOT) == ItemStack.EMPTY) forgeController.inventory.setStackInSlot(OUTPUT_SLOT, recipe.getOutput());
+                else if (forgeController.inventory.getStackInSlot(OUTPUT_SLOT).getItem() == recipe.getOutput().getItem()) forgeController.inventory.getStackInSlot(OUTPUT_SLOT).grow(recipe.getOutput().getCount());
             }
-            forgeController.fuelTime = forgeController.fuelTime - recipe.get().value().fuelPerTick() - 1;
-        } else forgeController.smeltProgress = 0;
-        if (forgeController.fuelTime > 0) forgeController.fuelTime--;
+            forgeController.fuelTime = forgeController.fuelTime - recipe.fuelPerTick() + (Config.ENABLE_PASSIVE_FUEL_CONSUMPTION.get() ? 1 : 0);
+        }
+        else forgeController.smeltProgress = 0;
     }
 
     public static int findNumber(ArrayList<Integer> array, int target) {
