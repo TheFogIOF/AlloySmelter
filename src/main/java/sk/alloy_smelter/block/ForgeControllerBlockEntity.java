@@ -35,6 +35,7 @@ import net.minecraftforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import sk.alloy_smelter.AlloySmelter;
+import sk.alloy_smelter.Config;
 import sk.alloy_smelter.recipe.CustomRecipeWrapper;
 import sk.alloy_smelter.recipe.SmeltingRecipe;
 import sk.alloy_smelter.registry.BlockEntities;
@@ -272,10 +273,15 @@ public class ForgeControllerBlockEntity extends SyncedBlockEntity implements Men
 
         if (!forgeController.verifyMultiblock()) return;
 
+        if (forgeController.fuelTime > 0 && Config.ENABLE_PASSIVE_FUEL_CONSUMPTION.get()) forgeController.fuelTime--;
+
         Optional<SmeltingRecipe> recipe = forgeController.getMatchingRecipe();
+
         if (recipe.isPresent() && forgeController.canSmelt(recipe.get())) {
             forgeController.smeltProgress++;
             if (forgeController.smeltProgress > recipe.get().getSmeltingTime()) {
+                forgeController.smeltProgress = 0;
+
                 if (recipe.get().getIngredients().size() > 1) {
                     forgeController.itemHandler.getStackInSlot(INPUT_SLOTS[0]).shrink(recipe.get().getIngredients().get(0).getItems()[0].getCount());
                     forgeController.itemHandler.getStackInSlot(INPUT_SLOTS[1]).shrink(recipe.get().getIngredients().get(1).getItems()[0].getCount());
@@ -283,16 +289,15 @@ public class ForgeControllerBlockEntity extends SyncedBlockEntity implements Men
                     forgeController.itemHandler.getStackInSlot(INPUT_SLOTS[0]).shrink(recipe.get().getIngredients().get(0).getItems()[0].getCount());
                     forgeController.itemHandler.getStackInSlot(INPUT_SLOTS[1]).shrink(recipe.get().getIngredients().get(0).getItems()[0].getCount());
                 }
-                forgeController.smeltProgress = 0;
+
                 if (forgeController.itemHandler.getStackInSlot(OUTPUT_SLOT) == ItemStack.EMPTY) {
                     forgeController.itemHandler.setStackInSlot(OUTPUT_SLOT, recipe.get().getOutput());
                 } else if (forgeController.itemHandler.getStackInSlot(OUTPUT_SLOT).getItem() == recipe.get().getOutput().getItem()) {
                     forgeController.itemHandler.getStackInSlot(OUTPUT_SLOT).grow(recipe.get().getOutput().getCount());
                 }
             }
-            forgeController.fuelTime = forgeController.fuelTime - recipe.get().fuelPerTick() - 1;
+            forgeController.fuelTime = forgeController.fuelTime - recipe.get().fuelPerTick() + (Config.ENABLE_PASSIVE_FUEL_CONSUMPTION.get() ? 1 : 0);
         } else forgeController.smeltProgress = 0;
-        if (forgeController.fuelTime > 0) forgeController.fuelTime--;
     }
 
     protected boolean canSmelt(SmeltingRecipe recipe) {
