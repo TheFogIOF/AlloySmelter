@@ -327,16 +327,18 @@ public class ForgeControllerBlockEntity extends SyncedBlockEntity implements Men
 
     public Optional<RecipeHolder<SmeltingRecipe>> getMatchingRecipe() {
         if (level == null) return Optional.empty();
+
         ItemStackHandler container = new ItemStackHandler(this.inventory.getSlots());
         for (int i = 0; i < INPUT_SLOTS.length; i++) container.setStackInSlot(i, this.inventory.getStackInSlot(INPUT_SLOTS[i]));
 
-        ArrayList<RecipeHolder<SmeltingRecipe>> recipes = new ArrayList<>();
-        ArrayList<Integer> recipeTiers = new ArrayList<>();
-        for (int i = 1; i <= FORGE_TIERS; i++) quickCheck.getRecipeFor(new CustomRecipeWrapper(container, i), this.level).ifPresent(recipes::add);
-        recipes.stream().forEach(recipe -> recipeTiers.add(recipe.value().getRequiredTier()));
-        int recipeTier = findNumber(recipeTiers, this.tier);
-
-        return quickCheck.getRecipeFor(new CustomRecipeWrapper(container, recipeTier), this.level);
+        for (int recipeTier = FORGE_TIERS; recipeTier >= 1; recipeTier--)
+        {
+            if (recipeTier <= this.tier) {
+                Optional<RecipeHolder<SmeltingRecipe>> recipe = quickCheck.getRecipeFor(new CustomRecipeWrapper(container, recipeTier), this.level);
+                if (recipe.isPresent()) return recipe;
+            }
+        }
+        return Optional.empty();
     }
 
     protected boolean canSmelt(SmeltingRecipe recipe) {
