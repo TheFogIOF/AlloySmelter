@@ -11,6 +11,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeManager;
+import net.neoforged.neoforge.client.event.RenderTooltipEvent;
 import sk.alloy_smelter.AlloySmelter;
 import sk.alloy_smelter.integration.rei.smelting.DisplaySmeltingT2;
 import sk.alloy_smelter.integration.rei.smelting.DisplaySmeltingT3;

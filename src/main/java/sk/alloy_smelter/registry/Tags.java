@@ -1,12 +1,19 @@
 package sk.alloy_smelter.registry;
 
+import net.minecraft.core.NonNullList;
+import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.block.Block;
+import org.checkerframework.checker.units.qual.A;
 import sk.alloy_smelter.AlloySmelter;
+import sk.alloy_smelter.recipe.SmeltingRecipe;
 
 public class Tags {
     public static final TagKey<Item> ALLOY_SMELTER_FUEL = ItemTag("alloy_smelter_fuel");
