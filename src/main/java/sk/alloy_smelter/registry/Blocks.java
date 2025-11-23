@@ -17,14 +17,15 @@ import java.util.function.Supplier;
 import java.util.function.ToIntFunction;
 
 public class Blocks {
+
     public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, AlloySmelter.MOD_ID);
 
     public static final RegistryObject<Block> FORGE_CONTROLLER_TIER1 = registerBlock("forge_controller_tier1",
-() -> new ForgeControllerBlock(BlockBehaviour.Properties.copy(net.minecraft.world.level.block.Blocks.BLACKSTONE).lightLevel(litBlockEmission(12)), 1));
+            () -> new ForgeControllerBlock(Block.Properties.copy(net.minecraft.world.level.block.Blocks.BRICKS).strength(4.0F).lightLevel(litBlockEmission(12)), 1));
     public static final RegistryObject<Block> FORGE_CONTROLLER_TIER2 = registerBlock("forge_controller_tier2",
-            () -> new ForgeControllerBlock(BlockBehaviour.Properties.copy(net.minecraft.world.level.block.Blocks.BLACKSTONE).lightLevel(litBlockEmission(12)), 2));
+            () -> new ForgeControllerBlock(Block.Properties.copy(net.minecraft.world.level.block.Blocks.BRICKS).strength(5.0F).lightLevel(litBlockEmission(12)), 2));
     public static final RegistryObject<Block> FORGE_CONTROLLER_TIER3 = registerBlock("forge_controller_tier3",
-            () -> new ForgeControllerBlock(BlockBehaviour.Properties.copy(net.minecraft.world.level.block.Blocks.BLACKSTONE).lightLevel(litBlockEmission(12)), 3));
+            () -> new ForgeControllerBlock(Block.Properties.copy(net.minecraft.world.level.block.Blocks.BRICKS).strength(6.0F).lightLevel(litBlockEmission(12)), 3));
 
     private static ToIntFunction<BlockState> litBlockEmission(int lightValue) {
         return blockState -> blockState.getValue(BlockStateProperties.LIT) ? lightValue : 0;

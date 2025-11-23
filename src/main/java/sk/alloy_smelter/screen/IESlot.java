@@ -1,15 +1,19 @@
 package sk.alloy_smelter.screen;
 
 import net.minecraft.world.Container;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.SlotItemHandler;
 import org.jetbrains.annotations.NotNull;
+import sk.alloy_smelter.event.ForgeOutputTakenEvent;
 
 public abstract class IESlot extends Slot {
     final AbstractContainerMenu containerMenu;
@@ -28,15 +32,35 @@ public abstract class IESlot extends Slot {
 
     public static class IEOutputSlot extends SlotItemHandlerIE
     {
-        public IEOutputSlot(IItemHandler inv, int id, int x, int y)
+        private final Player player;
+        private final Level level;
+
+        public IEOutputSlot(IItemHandler inv, int id, int x, int y, Player player, Level level)
         {
             super(inv, id, x, y);
+            this.level = level;
+            this.player = player;
         }
 
         @Override
         public boolean mayPlace(ItemStack itemStack)
         {
             return false;
+        }
+
+        @Override
+        public void onTake(Player player, ItemStack stack) {
+            super.onTake(player, stack);
+            if (!stack.isEmpty() && !level.isClientSide()) {
+                triggerTakeEvent(stack, stack.getCount());
+            }
+        }
+
+        private void triggerTakeEvent(ItemStack stack, int amount) {
+            ItemStack outputStack = stack.copy();
+            outputStack.setCount(amount);
+            ForgeOutputTakenEvent event = new ForgeOutputTakenEvent(player, outputStack);
+            MinecraftForge.EVENT_BUS.post(event);
         }
     }
 

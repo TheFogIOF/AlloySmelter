@@ -2,16 +2,16 @@
   "type": "alloy_smelter:smelting",
   "ingredients": [
     {
-      "ingredient": { "item": "minecraft:raw_iron" },
+      "item": "minecraft:raw_iron",
       "count": 1
     },
     {
-      "ingredient": { "item": "minecraft:raw_iron" },
+      "item": "minecraft:raw_iron",
       "count": 1
     }
   ],
   "result": {
-    "id": "minecraft:iron_ingot",
+    "item": "minecraft:iron_ingot",
     "count": 2
   },
   "smeltingTime": 60,

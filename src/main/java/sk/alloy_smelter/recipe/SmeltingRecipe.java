@@ -131,7 +131,7 @@ public class SmeltingRecipe implements Recipe<CustomRecipeWrapper> {
             NonNullList<Ingredient> nonnulllist = NonNullList.create();
             for (int i = 0; i < ingredientArray.size(); ++i) {
                 JsonObject jsonIngredient = ingredientArray.get(i).getAsJsonObject();
-                Ingredient ingredient = Ingredient.fromJson(ingredientArray.get(i));
+                Ingredient ingredient = Ingredient.fromJson(jsonIngredient);
                 int count = 1; if (jsonIngredient.has("count")) count = GsonHelper.getAsInt(jsonIngredient, "count");
                 ingredient.getItems()[0].setCount(count);
                 if (!ingredient.isEmpty()) nonnulllist.add(ingredient);

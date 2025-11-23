@@ -44,7 +44,7 @@ public class ForgeControllerMenu extends AbstractContainerMenu {
             this.addSlot(new IESlot.IEFuelSlot(iItemHandler, 0, 20, 45));
             this.addSlot(new SlotItemHandler(iItemHandler, 1, 62, 25));
             this.addSlot(new SlotItemHandler(iItemHandler, 2, 62, 45));
-            this.addSlot(new IESlot.IEOutputSlot(iItemHandler, 3, 120, 35));
+            this.addSlot(new IESlot.IEOutputSlot(iItemHandler, 3, 120, 35, inv.player, level));
         });
 
         addDataSlots(data);
