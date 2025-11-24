@@ -64,9 +64,12 @@ public class JEICategorySmeltingT2 implements IRecipeCategory<SmeltingRecipe> {
     @Override
     public void setRecipe(IRecipeLayoutBuilder builder, SmeltingRecipe recipe, IFocusGroup focuses) {
         builder.addSlot(RecipeIngredientRole.INPUT, 20, 45).addItemStack(new ItemStack(Items.COAL));
-        builder.addSlot(RecipeIngredientRole.INPUT, 62, 25).addIngredients(recipe.getIngredients().get(0));
-        if (recipe.getIngredients().size() > 1) builder.addSlot(RecipeIngredientRole.INPUT, 62, 45).addIngredients(recipe.getIngredients().get(1));
-        builder.addSlot(RecipeIngredientRole.OUTPUT, 120, 35).addItemStack(recipe.getOutput());
+        builder.addSlot(RecipeIngredientRole.INPUT, 20, 25).addIngredients(recipe.getIngredients().get(0));
+        if (recipe.getIngredients().size() > 1) builder.addSlot(RecipeIngredientRole.INPUT, 20 + 21, 25).addIngredients(recipe.getIngredients().get(1));
+        if (recipe.getIngredients().size() > 2) builder.addSlot(RecipeIngredientRole.INPUT, 20 + 21 * 2, 25).addIngredients(recipe.getIngredients().get(2));
+        if (recipe.getIngredients().size() > 3) builder.addSlot(RecipeIngredientRole.INPUT, 20 + 21 * 3, 25).addIngredients(recipe.getIngredients().get(3));
+        if (recipe.getIngredients().size() > 4) builder.addSlot(RecipeIngredientRole.INPUT, 20 + 21 * 4, 25).addIngredients(recipe.getIngredients().get(4));
+        builder.addSlot(RecipeIngredientRole.OUTPUT, 135, 25).addItemStack(recipe.getOutput());
     }
 
     @Override
@@ -75,7 +78,7 @@ public class JEICategorySmeltingT2 implements IRecipeCategory<SmeltingRecipe> {
         arrow.draw(guiGraphics, 83, 35);
         guiGraphics.pose().pushPose();
         guiGraphics.pose().scale(0.5f,0.5f,0.5f);
-        guiGraphics.drawCenteredString(Minecraft.getInstance().font, recipe.getSmeltingTime()/20 + " ⌚/s", 189, 110, 0xFFFFFF);
+        guiGraphics.drawCenteredString(Minecraft.getInstance().font, recipe.getSmeltingTime()/20 + " ⌚/s", 286, 130, 0xFFFFFF);
         guiGraphics.drawCenteredString(Minecraft.getInstance().font, recipe.fuelPerTick() + " \uD83D\uDD25/tick", 56, 130, 0xFFFFFF);
         guiGraphics.drawString(Minecraft.getInstance().font, Component.translatable("gui.alloy_smelter.forge_tier").getString() + " " + recipe.getRequiredTier(), 16, 12, 0xFFFFFF);
         guiGraphics.pose().popPose();

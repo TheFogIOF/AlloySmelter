@@ -9,9 +9,11 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.items.SlotItemHandler;
 import sk.alloy_smelter.block.ForgeControllerBlockEntity;
+import sk.alloy_smelter.event.ForgeOutputTakenEvent;
 import sk.alloy_smelter.registry.Blocks;
 import sk.alloy_smelter.recipe.SmeltingRecipe;
 import sk.alloy_smelter.registry.MenuTypes;
@@ -27,12 +29,12 @@ public class ForgeControllerMenu extends AbstractContainerMenu {
     private final ContainerData data;
 
     public ForgeControllerMenu(int pContainerId, Inventory inv, FriendlyByteBuf extraData) {
-        this(pContainerId, inv, inv.player.level().getBlockEntity(extraData.readBlockPos()), new SimpleContainerData(4));
+        this(pContainerId, inv, inv.player.level().getBlockEntity(extraData.readBlockPos()), new SimpleContainerData(7));
     }
 
     public ForgeControllerMenu(int pContainerId, Inventory inv, BlockEntity entity, ContainerData data) {
         super(MenuTypes.FORGE_CONTROLLER_MENU.get(), pContainerId);
-        checkContainerSize(inv, 4);
+        checkContainerSize(inv, 7);
         blockEntity = ((ForgeControllerBlockEntity) entity);
         this.level = inv.player.level();
         this.data = data;
@@ -42,9 +44,12 @@ public class ForgeControllerMenu extends AbstractContainerMenu {
 
         this.blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER).ifPresent(iItemHandler -> {
             this.addSlot(new IESlot.IEFuelSlot(iItemHandler, 0, 20, 45));
-            this.addSlot(new SlotItemHandler(iItemHandler, 1, 62, 25));
-            this.addSlot(new SlotItemHandler(iItemHandler, 2, 62, 45));
-            this.addSlot(new IESlot.IEOutputSlot(iItemHandler, 3, 120, 35, inv.player, level));
+            this.addSlot(new SlotItemHandler(iItemHandler, 1, 20, 25));
+            this.addSlot(new SlotItemHandler(iItemHandler, 2, 20 + 21, 25));
+            this.addSlot(new SlotItemHandler(iItemHandler, 3, 20 + 21 * 2, 25));
+            this.addSlot(new SlotItemHandler(iItemHandler, 4, 20 + 21 * 3, 25));
+            this.addSlot(new SlotItemHandler(iItemHandler, 5, 20 + 21 * 4, 25));
+            this.addSlot(new IESlot.IEOutputSlot(iItemHandler, 6, 135, 25, inv.player, level));
         });
 
         addDataSlots(data);
@@ -52,7 +57,7 @@ public class ForgeControllerMenu extends AbstractContainerMenu {
 
     @Override
     public ItemStack quickMoveStack(Player playerIn, int index) {
-        int lastSlotIndex = 3;
+        int lastSlotIndex = 6;
 
         Slot sourceSlot = slots.get(index);
         int slotCount = lastSlotIndex + 1;
@@ -76,8 +81,20 @@ public class ForgeControllerMenu extends AbstractContainerMenu {
         } else {
             sourceSlot.setChanged();
         }
+        if (index - 36 == lastSlotIndex) {
+            if (!copyOfSourceStack.isEmpty() && !level.isClientSide()) {
+                triggerTakeEvent(playerIn, copyOfSourceStack, copyOfSourceStack.getCount());
+            }
+        }
         sourceSlot.onTake(playerIn, sourceStack);
         return copyOfSourceStack;
+    }
+
+    private void triggerTakeEvent(Player player, ItemStack stack, int amount) {
+        ItemStack outputStack = stack.copy();
+        outputStack.setCount(amount);
+        ForgeOutputTakenEvent event = new ForgeOutputTakenEvent(player, outputStack);
+        MinecraftForge.EVENT_BUS.post(event);
     }
 
     protected static boolean valid(ContainerLevelAccess access, Player player, TagKey<Block> targetBlock) {
