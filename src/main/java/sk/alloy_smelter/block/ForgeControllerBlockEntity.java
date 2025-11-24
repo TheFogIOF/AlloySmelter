@@ -28,6 +28,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.capabilities.*;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemStackHandler;
+import net.neoforged.neoforge.items.SlotItemHandler;
 import org.jetbrains.annotations.Nullable;
 import sk.alloy_smelter.AlloySmelter;
 import sk.alloy_smelter.Config;
@@ -43,7 +44,7 @@ import java.util.Optional;
 
 @EventBusSubscriber(modid = AlloySmelter.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
 public class ForgeControllerBlockEntity extends SyncedBlockEntity implements MenuProvider {
-    private final ItemStackHandler inventory = new ItemStackHandler(4) {
+    private final ItemStackHandler inventory = new ItemStackHandler(7) {
         @Override
         protected void onContentsChanged(int slot) {
             inventoryChanged();
@@ -51,8 +52,8 @@ public class ForgeControllerBlockEntity extends SyncedBlockEntity implements Men
     };
 
     private static final int FUEL_SLOT = 0;
-    private static final int[] INPUT_SLOTS = {1, 2};
-    private static final int OUTPUT_SLOT = 3;
+    private static final int[] INPUT_SLOTS = {1, 2, 3, 4, 5};
+    private static final int OUTPUT_SLOT = 6;
 
     private static final int FORGE_TIERS = 3;
 
@@ -61,11 +62,14 @@ public class ForgeControllerBlockEntity extends SyncedBlockEntity implements Men
     private final Direction facing;
 
     protected final ContainerData data;
-
+    /*
     private final IItemHandler inputFrontHandler;
     private final IItemHandler inputLeftHandler;
     private final IItemHandler inputRightHandler;
+    */
+    private final IItemHandler inputHandler;
     private final IItemHandler outputHandler;
+    private final IItemHandler fullHandler;
 
     private int smeltProgress;
     private int maxSmeltProgress;
@@ -80,10 +84,9 @@ public class ForgeControllerBlockEntity extends SyncedBlockEntity implements Men
         multiblockPositions = generateMultiblock(position, state.getValue(ForgeControllerBlock.FACING));
         tier = ((ForgeControllerBlock) state.getBlock()).tier;
 
-        this.inputFrontHandler = createHopperFrontItemHandler(inventory);
-        this.inputLeftHandler = createHopperLeftItemHandler(inventory);
-        this.inputRightHandler = createHopperRightItemHandler(inventory);
-        this.outputHandler = createHopperBottomItemHandler(inventory);
+        this.inputHandler = insertItemCapability(inventory);
+        this.outputHandler = extractItemCapability(inventory);
+        this.fullHandler = fullItemCapability();
 
         this.data = new ContainerData() {
             @Override
@@ -115,35 +118,15 @@ public class ForgeControllerBlockEntity extends SyncedBlockEntity implements Men
         this.quickCheck = RecipeManager.createCheck(RecipeTypes.SMELTING.get());
     }
 
-    public static Direction getSide(Direction direction, int state) {
-        Direction[] directions = new Direction[4];
-        directions[0] = Direction.EAST;
-        directions[1] = Direction.NORTH;
-        directions[2] = Direction.WEST;
-        directions[3] = Direction.SOUTH;
-        for (int i = 0; i < directions.length; i++) {
-            if (directions[i] == direction) {
-                if (state == 0) return directions[i];
-                if (state == 1) return (i == 0) ? directions[i + 3] : directions[i - 1];
-                if (state == 2) return (i == 3) ? directions[i - 3] : directions[i + 1];
-            }
-        }
-        return Direction.UP;
-    }
-
     @SubscribeEvent
     public static void registerCapabilities(RegisterCapabilitiesEvent event) {
         event.registerBlockEntity(
             Capabilities.ItemHandler.BLOCK,
             BlockEntities.FORGE_CONTROLLER_BLOCK_ENTITY.get(),
             (be, context) -> {
-                if (context == getSide(be.facing, 0))
-                    return be.inputFrontHandler;
-                if (context == getSide(be.facing, 1))
-                    return be.inputLeftHandler;
-                if (context == getSide(be.facing, 2))
-                    return be.inputRightHandler;
-                return be.outputHandler;
+                if (context == Direction.DOWN) return be.outputHandler;
+                if (context == Direction.UP) return be.inputHandler;
+                return be.fullHandler;
             }
         );
     }
@@ -153,45 +136,51 @@ public class ForgeControllerBlockEntity extends SyncedBlockEntity implements Men
         super.invalidateCapabilities();
     }
 
-    private IItemHandler createHopperFrontItemHandler(ItemStackHandler inventory) {
+    private IItemHandler insertItemCapability(ItemStackHandler inventory) {
         return new IItemHandler() {
+            @Override public int getSlots() { return inventory.getSlots(); }
+            @Override public ItemStack getStackInSlot(int slot) { return inventory.getStackInSlot(slot); }
             @Override
-            public int getSlots() { return 1; }
-            @Override public ItemStack getStackInSlot(int slot) { return ItemStack.EMPTY; }
-            @Override public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) { return inventory.insertItem(0, stack, simulate); }
+            public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
+                for (int i = 0; i < inventory.getSlots(); i++) {
+                    if (i != FUEL_SLOT) {
+                        ItemStack remaining = inventory.insertItem(i, stack, simulate);
+                        if (remaining.getCount() != stack.getCount()) {
+                            return remaining;
+                        }
+                    }
+                }
+                return stack;
+            }
             @Override public ItemStack extractItem(int slot, int amount, boolean simulate) { return ItemStack.EMPTY; }
             @Override public int getSlotLimit(int slot) { return inventory.getSlotLimit(slot); }
             @Override public boolean isItemValid(int slot, ItemStack stack) { return true; }
         };
     }
-    private IItemHandler createHopperBottomItemHandler(ItemStackHandler inventory) {
+    private IItemHandler extractItemCapability(ItemStackHandler inventory) {
         return new IItemHandler() {
             @Override public int getSlots() { return 1; }
-            @Override public ItemStack getStackInSlot(int slot) { return inventory.getStackInSlot(3); }
-            @Override public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) { return stack; } // No insertion
-            @Override public ItemStack extractItem(int slot, int amount, boolean simulate) { return inventory.extractItem(3, amount, simulate); }
+            @Override public ItemStack getStackInSlot(int slot) { return inventory.getStackInSlot(OUTPUT_SLOT); }
+            @Override public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) { return stack; }
+            @Override public ItemStack extractItem(int slot, int amount, boolean simulate) { return inventory.extractItem(OUTPUT_SLOT, amount, simulate); }
             @Override public int getSlotLimit(int slot) { return inventory.getSlotLimit(slot); }
             @Override public boolean isItemValid(int slot, ItemStack stack) { return false; }
         };
     }
-    private IItemHandler createHopperLeftItemHandler(ItemStackHandler inventory) {
+    public IItemHandler fullItemCapability() {
         return new IItemHandler() {
-            @Override public int getSlots() { return 2; }
-            @Override public ItemStack getStackInSlot(int slot) { return ItemStack.EMPTY; }
-            @Override public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) { return inventory.insertItem(1, stack, simulate); }
-            @Override public ItemStack extractItem(int slot, int amount, boolean simulate) { return ItemStack.EMPTY; }
+            @Override public int getSlots() { return inventory.getSlots(); }
+            @Override public ItemStack getStackInSlot(int slot) { return inventory.getStackInSlot(slot); }
+            @Override public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
+                return inventory.insertItem(slot, stack, simulate);
+            }
+            @Override public ItemStack extractItem(int slot, int amount, boolean simulate) {
+                return inventory.extractItem(slot, amount, simulate);
+            }
             @Override public int getSlotLimit(int slot) { return inventory.getSlotLimit(slot); }
-            @Override public boolean isItemValid(int slot, ItemStack stack) { return true; }
-        };
-    }
-    private IItemHandler createHopperRightItemHandler(ItemStackHandler inventory) {
-        return new IItemHandler() {
-            @Override public int getSlots() { return 2; }
-            @Override public ItemStack getStackInSlot(int slot) { return ItemStack.EMPTY; }
-            @Override public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) { return inventory.insertItem(2, stack, simulate); }
-            @Override public ItemStack extractItem(int slot, int amount, boolean simulate) { return ItemStack.EMPTY; }
-            @Override public int getSlotLimit(int slot) { return inventory.getSlotLimit(slot); }
-            @Override public boolean isItemValid(int slot, ItemStack stack) { return true; }
+            @Override public boolean isItemValid(int slot, ItemStack stack) {
+                return inventory.isItemValid(slot, stack);
+            }
         };
     }
 
@@ -299,9 +288,16 @@ public class ForgeControllerBlockEntity extends SyncedBlockEntity implements Men
             if (forgeController.smeltProgress > recipe.getSmeltingTime()) {
                 forgeController.smeltProgress = 0;
 
-                forgeController.inventory.getStackInSlot(INPUT_SLOTS[0]).shrink(recipe.getMaterials().get(0).count());
-                if (recipe.getMaterials().size() > 1) forgeController.inventory.getStackInSlot(INPUT_SLOTS[1]).shrink(recipe.getMaterials().get(1).count());
-                else forgeController.inventory.getStackInSlot(INPUT_SLOTS[1]).shrink(recipe.getMaterials().get(0).count());
+                List<SmeltingRecipe.Material> materials = recipe.getMaterials();
+                if (materials.size() > 1) {
+                    for (int i = 0; i < materials.size(); i++) {
+                        forgeController.inventory.getStackInSlot(INPUT_SLOTS[i]).shrink(materials.get(i).count());
+                    }
+                } else {
+                    for (int slot : INPUT_SLOTS) {
+                        forgeController.inventory.getStackInSlot(slot).shrink(materials.get(0).count());
+                    }
+                }
 
                 if (forgeController.inventory.getStackInSlot(OUTPUT_SLOT) == ItemStack.EMPTY) forgeController.inventory.setStackInSlot(OUTPUT_SLOT, recipe.getOutput());
                 else if (forgeController.inventory.getStackInSlot(OUTPUT_SLOT).getItem() == recipe.getOutput().getItem()) forgeController.inventory.getStackInSlot(OUTPUT_SLOT).grow(recipe.getOutput().getCount());
@@ -309,15 +305,6 @@ public class ForgeControllerBlockEntity extends SyncedBlockEntity implements Men
             forgeController.fuelTime = forgeController.fuelTime - recipe.fuelPerTick() + (Config.ENABLE_PASSIVE_FUEL_CONSUMPTION.get() ? 1 : 0);
         }
         else forgeController.smeltProgress = 0;
-    }
-
-    public static int findNumber(ArrayList<Integer> array, int target) {
-        int max = Integer.MIN_VALUE;
-        for (int num : array) {
-            if (num == target) return target;
-            if (num > max) max = num;
-        }
-        return max;
     }
 
     public Optional<RecipeHolder<SmeltingRecipe>> getMatchingRecipe() {
@@ -340,21 +327,24 @@ public class ForgeControllerBlockEntity extends SyncedBlockEntity implements Men
         ItemStack output = recipe.getResultItem(level.registryAccess());
         output.isEmpty();
 
-        if (this.fuelTime > 0)
-            if (this.tier >= recipe.getRequiredTier())
-                if (this.inventory.getStackInSlot(OUTPUT_SLOT).getCount() + recipe.getOutput().getCount() <= recipe.getOutput().getMaxStackSize())
-                    if (recipe.getOutput().getItem() == this.inventory.getStackInSlot(OUTPUT_SLOT).getItem() || this.inventory.getStackInSlot(OUTPUT_SLOT) == ItemStack.EMPTY)
-                        if (recipe.getMaterials().size() > 1) {
-                            if (recipe.getMaterials().get(0).ingredient().test(this.inventory.getStackInSlot(INPUT_SLOTS[0]))
-                                    && recipe.getMaterials().get(1).ingredient().test(this.inventory.getStackInSlot(INPUT_SLOTS[1]))
-                                    && this.inventory.getStackInSlot(INPUT_SLOTS[0]).getCount() >= recipe.getMaterials().get(0).count()
-                                    && this.inventory.getStackInSlot(INPUT_SLOTS[1]).getCount() >= recipe.getMaterials().get(1).count())
-                                return true;
-                        } else {
-                            if (this.inventory.getStackInSlot(INPUT_SLOTS[0]).getCount() >= recipe.getMaterials().get(0).count()
-                                    || this.inventory.getStackInSlot(INPUT_SLOTS[1]).getCount() >= recipe.getMaterials().get(0).count())
-                                return true;
-                        }
+        if (!(this.fuelTime > 0)) return false;
+        if (!(this.tier >= recipe.getRequiredTier())) return false;
+        if (!(this.inventory.getStackInSlot(OUTPUT_SLOT).getCount() + recipe.getOutput().getCount() <= recipe.getOutput().getMaxStackSize())) return false;
+        if (!(recipe.getOutput().getItem() == this.inventory.getStackInSlot(OUTPUT_SLOT).getItem() || this.inventory.getStackInSlot(OUTPUT_SLOT) == ItemStack.EMPTY)) return false;
+        List<SmeltingRecipe.Material> materials = recipe.getMaterials();
+
+        if (materials.size() > 1) {
+            for (int i = 0; i < materials.size(); i++) {
+                if (!materials.get(i).ingredient().test(this.inventory.getStackInSlot(INPUT_SLOTS[i]))
+                        && this.inventory.getStackInSlot(INPUT_SLOTS[i]).getCount() < materials.get(i).count()
+                ) return false;
+            }
+            return true;
+        } else {
+            for (int slot : INPUT_SLOTS) {
+                if (this.inventory.getStackInSlot(slot).getCount() >= materials.getFirst().count()) return true;
+            }
+        }
         return false;
     }
 
@@ -365,9 +355,12 @@ public class ForgeControllerBlockEntity extends SyncedBlockEntity implements Men
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean verifyMultiblock() {
         BlockState blockBelowController = level.getBlockState(this.multiblockPositions.get(0));
+        BlockState blockAboveController = level.getBlockState(this.multiblockPositions.get(1));
         TagKey<Block> ALLOY_SMELTER_BLOCKS = BlockTags.create(ResourceLocation.fromNamespaceAndPath(AlloySmelter.MOD_ID, "alloy_smelter_blocks_tier" + this.tier));
-        if (!blockBelowController.is(ALLOY_SMELTER_BLOCKS) && !blockBelowController.is(Blocks.HOPPER)) return false;
-        for (int i = 1; i < this.multiblockPositions.size(); i++)
+        TagKey<Block> ALLOY_SMELTER_HOPPER = BlockTags.create(ResourceLocation.fromNamespaceAndPath(AlloySmelter.MOD_ID, "alloy_smelter_hopper"));
+        if (!blockBelowController.is(ALLOY_SMELTER_BLOCKS) && !blockBelowController.is(ALLOY_SMELTER_HOPPER)) return false;
+        if (!blockAboveController.is(ALLOY_SMELTER_BLOCKS) && !blockAboveController.is(ALLOY_SMELTER_HOPPER)) return false;
+        for (int i = 2; i < this.multiblockPositions.size(); i++)
             if (!(level.getBlockState(this.multiblockPositions.get(i)).is(ALLOY_SMELTER_BLOCKS))) return false;
         return true;
     }
@@ -387,8 +380,6 @@ public class ForgeControllerBlockEntity extends SyncedBlockEntity implements Men
                 center.offset(1, -1, 1)
         };
         for (BlockPos i : offsets) posses.add(i);
-        posses.remove(controllerPos.below());
-        posses.add(0, controllerPos.below());
         for (int i = 0; i < 2; i++) {
             BlockPos newCenter = center.offset(0, i, 0);
             posses.add(newCenter.east());
@@ -396,7 +387,11 @@ public class ForgeControllerBlockEntity extends SyncedBlockEntity implements Men
             posses.add(newCenter.north());
             posses.add(newCenter.south());
         }
+        posses.remove(controllerPos.above());
+        posses.remove(controllerPos.below());
         posses.remove(controllerPos);
+        posses.add(0, controllerPos.below());
+        posses.add(1, controllerPos.above());
         return List.copyOf(posses);
     }
 }

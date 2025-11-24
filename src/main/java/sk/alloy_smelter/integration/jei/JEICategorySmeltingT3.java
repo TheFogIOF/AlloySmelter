@@ -71,7 +71,7 @@ public class JEICategorySmeltingT3 implements IRecipeCategory<SmeltingRecipe> {
             itemStacks[i].setCount(recipe.getMaterials().get(0).count());
             ingredient_0 = Ingredient.of(itemStacks);
         }
-        builder.addSlot(RecipeIngredientRole.INPUT, 62, 25).addIngredients(ingredient_0);
+        builder.addSlot(RecipeIngredientRole.INPUT, 20, 25).addIngredients(ingredient_0);
         if (recipe.getMaterials().size() > 1) {
             Ingredient ingredient_1 = Ingredient.EMPTY;
             for (int i = 0; i < recipe.getMaterials().get(1).ingredient().getItems().length; i++)
@@ -81,18 +81,51 @@ public class JEICategorySmeltingT3 implements IRecipeCategory<SmeltingRecipe> {
                 itemStacks[i].setCount(recipe.getMaterials().get(1).count());
                 ingredient_1 = Ingredient.of(itemStacks);
             }
-            builder.addSlot(RecipeIngredientRole.INPUT, 62, 45).addIngredients(ingredient_1);
+            builder.addSlot(RecipeIngredientRole.INPUT, 20 + 21, 25).addIngredients(ingredient_1);
         }
-        builder.addSlot(RecipeIngredientRole.OUTPUT, 120, 35).addItemStack(recipe.getOutput());
+        if (recipe.getMaterials().size() > 2) {
+            Ingredient ingredient_2 = Ingredient.EMPTY;
+            for (int i = 0; i < recipe.getMaterials().get(2).ingredient().getItems().length; i++)
+            {
+                ItemStack[] itemStacks = new ItemStack[recipe.getMaterials().get(2).ingredient().getItems().length];
+                itemStacks[i] = recipe.getMaterials().get(2).ingredient().getItems()[i];
+                itemStacks[i].setCount(recipe.getMaterials().get(2).count());
+                ingredient_2 = Ingredient.of(itemStacks);
+            }
+            builder.addSlot(RecipeIngredientRole.INPUT, 20 + 21 * 2, 25).addIngredients(ingredient_2);
+        }
+        if (recipe.getMaterials().size() > 3) {
+            Ingredient ingredient_3 = Ingredient.EMPTY;
+            for (int i = 0; i < recipe.getMaterials().get(3).ingredient().getItems().length; i++)
+            {
+                ItemStack[] itemStacks = new ItemStack[recipe.getMaterials().get(3).ingredient().getItems().length];
+                itemStacks[i] = recipe.getMaterials().get(3).ingredient().getItems()[i];
+                itemStacks[i].setCount(recipe.getMaterials().get(3).count());
+                ingredient_3 = Ingredient.of(itemStacks);
+            }
+            builder.addSlot(RecipeIngredientRole.INPUT, 20 + 21 * 3, 25).addIngredients(ingredient_3);
+        }
+        if (recipe.getMaterials().size() > 4) {
+            Ingredient ingredient_4 = Ingredient.EMPTY;
+            for (int i = 0; i < recipe.getMaterials().get(4).ingredient().getItems().length; i++)
+            {
+                ItemStack[] itemStacks = new ItemStack[recipe.getMaterials().get(4).ingredient().getItems().length];
+                itemStacks[i] = recipe.getMaterials().get(4).ingredient().getItems()[i];
+                itemStacks[i].setCount(recipe.getMaterials().get(4).count());
+                ingredient_4 = Ingredient.of(itemStacks);
+            }
+            builder.addSlot(RecipeIngredientRole.INPUT, 20 + 21 * 4, 25).addIngredients(ingredient_4);
+        }
+        builder.addSlot(RecipeIngredientRole.OUTPUT, 135, 25).addItemStack(recipe.getOutput());
     }
 
     @Override
     public void draw(SmeltingRecipe recipe, IRecipeSlotsView recipeSlotsView, GuiGraphics guiGraphics, double mouseX, double mouseY) {
         flame.draw(guiGraphics, 42, 46);
-        arrow.draw(guiGraphics, 83, 35);
+        arrow.draw(guiGraphics, 131, 47);
         guiGraphics.pose().pushPose();
         guiGraphics.pose().scale(0.5f,0.5f,0.5f);
-        guiGraphics.drawCenteredString(Minecraft.getInstance().font, recipe.getSmeltingTime()/20 + " ⌚/s", 189, 110, 0xFFFFFF);
+        guiGraphics.drawCenteredString(Minecraft.getInstance().font, recipe.getSmeltingTime()/20 + " ⌚/s", 286, 130, 0xFFFFFF);
         guiGraphics.drawCenteredString(Minecraft.getInstance().font, recipe.fuelPerTick() + " \uD83D\uDD25/tick", 56, 130, 0xFFFFFF);
         guiGraphics.drawString(Minecraft.getInstance().font, Component.translatable("gui.alloy_smelter.forge_tier").getString() + " " + recipe.getRequiredTier(), 16, 12, 0xFFFFFF);
         guiGraphics.pose().popPose();

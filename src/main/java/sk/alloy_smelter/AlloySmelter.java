@@ -20,6 +20,7 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.player.AnvilRepairEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerContainerEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
+import org.jline.utils.Log;
 import org.slf4j.Logger;
 import sk.alloy_smelter.event.ForgeOutputTakenEvent;
 import sk.alloy_smelter.registry.*;

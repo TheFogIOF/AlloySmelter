@@ -56,18 +56,25 @@ public class REICategorySmeltingT1 implements DisplayCategory<DisplaySmeltingT1>
 
         EntryIngredient entryIngredient_0 = display.getInputEntries().get(0);
 
-        widgets.add(Widgets.createSlot(new Point(startPoint.x + 62, startPoint.y + 25)).disableBackground()
-                .entries(entryIngredient_0));
+        widgets.add(Widgets.createSlot(new Point(startPoint.x + 20, startPoint.y + 25)).disableBackground().entries(entryIngredient_0));
 
         EntryIngredient entryIngredient_1 = EntryIngredient.empty();
-        if (display.getInputEntries().size() > 1) {
-            entryIngredient_1 = display.getInputEntries().get(1);
-        }
-        widgets.add(Widgets.createSlot(new Point(startPoint.x + 62, startPoint.y + 45)).disableBackground()
-                .entries(entryIngredient_1));
+        if (display.getInputEntries().size() > 1) entryIngredient_1 = display.getInputEntries().get(1);
+        widgets.add(Widgets.createSlot(new Point(startPoint.x + 20 + 21, startPoint.y + 25)).disableBackground().entries(entryIngredient_1));
 
-        widgets.add(Widgets.createSlot(new Point(startPoint.x + 120, startPoint.y + 35)).disableBackground()
-                .markOutput().entries(display.getOutputEntries().getFirst()));
+        EntryIngredient entryIngredient_2 = EntryIngredient.empty();
+        if (display.getInputEntries().size() > 2) entryIngredient_2 = display.getInputEntries().get(2);
+        widgets.add(Widgets.createSlot(new Point(startPoint.x + 20 + 21 * 2, startPoint.y + 25)).disableBackground().entries(entryIngredient_2));
+
+        EntryIngredient entryIngredient_3 = EntryIngredient.empty();
+        if (display.getInputEntries().size() > 3) entryIngredient_3 = display.getInputEntries().get(3);
+        widgets.add(Widgets.createSlot(new Point(startPoint.x + 20 + 21 * 3, startPoint.y + 25)).disableBackground().entries(entryIngredient_3));
+
+        EntryIngredient entryIngredient_4 = EntryIngredient.empty();
+        if (display.getInputEntries().size() > 4) entryIngredient_4 = display.getInputEntries().get(4);
+        widgets.add(Widgets.createSlot(new Point(startPoint.x + 20 + 21 * 4, startPoint.y + 25)).disableBackground().entries(entryIngredient_4));
+
+        widgets.add(Widgets.createSlot(new Point(startPoint.x + 135, startPoint.y + 25)).disableBackground().markOutput().entries(display.getOutputEntries().getFirst()));
 
         widgets.add(Widgets.createDrawableWidget((graphics, mouseX, mouseY, delta) -> {
             int height = 12 - Mth.ceil((System.currentTimeMillis() / (3200 / 12) % 12d));
@@ -76,13 +83,13 @@ public class REICategorySmeltingT1 implements DisplayCategory<DisplaySmeltingT1>
 
         widgets.add(Widgets.createDrawableWidget((graphics, mouseX, mouseY, delta) -> {
             int width = Mth.ceil((System.currentTimeMillis() / (3200 / 22) % 22d));
-            graphics.blit(TEXTURE, startPoint.x + 84, startPoint.y + 35, 177, 14, width, 16, 256, 256);
+            graphics.blit(TEXTURE, startPoint.x + 132, startPoint.y + 47, 177, 14, width, 16, 256, 256);
         }));
 
         widgets.add(Widgets.createDrawableWidget((graphics, mouseX, mouseY, delta) -> {
             graphics.pose().pushPose();
             graphics.pose().scale(0.5f, 0.5f, 0.5f);
-            graphics.drawCenteredString(Minecraft.getInstance().font, display.smeltingTime / 20 + " ⌚/s", startPoint.x * 2 + 189, startPoint.y * 2 + 110, 0xFFFFFF);
+            graphics.drawCenteredString(Minecraft.getInstance().font, display.smeltingTime / 20 + " ⌚/s", startPoint.x * 2 + 189 + 96, startPoint.y * 2 + 110 + 24, 0xFFFFFF);
             graphics.drawCenteredString(Minecraft.getInstance().font, display.fuelPerTick + " \uD83D\uDD25/tick", startPoint.x * 2 + 56, startPoint.y * 2 + 130, 0xFFFFFF);
             graphics.drawString(Minecraft.getInstance().font, Component.translatable("gui.alloy_smelter.forge_tier").getString() + " " + display.forgeTier, startPoint.x * 2 + 16, startPoint.y * 2 + 12, 0xFFFFFF);
             graphics.pose().popPose();

@@ -66,7 +66,7 @@ public class SmeltingRecipe implements Recipe<CustomRecipeWrapper> {
         java.util.List<ItemStack> inputs = new java.util.ArrayList<>();
         int i = 0;
 
-        for (int j = 0; j < 2; ++j) {
+        for (int j = 0; j < 5; ++j) {
             ItemStack itemstack = recipeWrapper.getItem(j);
             if (!itemstack.isEmpty()) {
                 ++i;

@@ -36,7 +36,7 @@ public class ForgeControllerScreen extends AbstractContainerScreen<ForgeControll
         guiGraphics.blit(TEXTURE, x, y, 0, 0, imageWidth, imageHeight);
 
         burnProgress(guiGraphics, x + 44, y + 46);
-        renderProgressArrow(guiGraphics, x + 83, y + 35);
+        renderProgressArrow(guiGraphics, x + 131, y + 47);
     }
 
     private void renderProgressArrow(GuiGraphics guiGraphics, int x, int y) {

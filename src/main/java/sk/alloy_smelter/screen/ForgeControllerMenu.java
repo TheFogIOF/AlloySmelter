@@ -10,10 +10,13 @@ import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import net.neoforged.neoforge.items.SlotItemHandler;
 import org.jetbrains.annotations.NotNull;
+import sk.alloy_smelter.AlloySmelter;
 import sk.alloy_smelter.block.ForgeControllerBlockEntity;
+import sk.alloy_smelter.event.ForgeOutputTakenEvent;
 import sk.alloy_smelter.registry.Blocks;
 import sk.alloy_smelter.recipe.SmeltingRecipe;
 import sk.alloy_smelter.registry.MenuTypes;
@@ -30,12 +33,12 @@ public class ForgeControllerMenu extends AbstractContainerMenu {
     private final ContainerData data;
 
     public ForgeControllerMenu(int pContainerId, Inventory inv, FriendlyByteBuf extraData) {
-        this(pContainerId, inv, inv.player.level().getBlockEntity(extraData.readBlockPos()), new SimpleContainerData(4));
+        this(pContainerId, inv, inv.player.level().getBlockEntity(extraData.readBlockPos()), new SimpleContainerData(7));
     }
 
     public ForgeControllerMenu(int pContainerId, Inventory inv, BlockEntity entity, ContainerData data) {
         super(MenuTypes.FORGE_CONTROLLER_MENU.get(), pContainerId);
-        checkContainerSize(inv, 4);
+        checkContainerSize(inv, 7);
         this.blockEntity = ((ForgeControllerBlockEntity) entity);
         this.inventory = blockEntity.getInventory();
         this.level = inv.player.level();
@@ -45,16 +48,19 @@ public class ForgeControllerMenu extends AbstractContainerMenu {
         addPlayerHotbar(inv);
 
         this.addSlot(new IESlot.IEFuelSlot(inventory, 0, 20, 45));
-        this.addSlot(new SlotItemHandler(inventory, 1, 62, 25));
-        this.addSlot(new SlotItemHandler(inventory, 2, 62, 45));
-        this.addSlot(new IESlot.IEOutputSlot(inventory, 3, 120, 35, inv.player, level));
+        this.addSlot(new SlotItemHandler(inventory, 1, 20, 25));
+        this.addSlot(new SlotItemHandler(inventory, 2, 20 + 21, 25));
+        this.addSlot(new SlotItemHandler(inventory, 3, 20 + 21 * 2, 25));
+        this.addSlot(new SlotItemHandler(inventory, 4, 20 + 21 * 3, 25));
+        this.addSlot(new SlotItemHandler(inventory, 5, 20 + 21 * 4, 25));
+        this.addSlot(new IESlot.IEOutputSlot(inventory, 6, 135, 25, inv.player, level));
 
         addDataSlots(data);
     }
 
     @Override
     public ItemStack quickMoveStack(Player playerIn, int index) {
-        int lastSlotIndex = 3;
+        int lastSlotIndex = 6;
 
         Slot sourceSlot = slots.get(index);
         int slotCount = lastSlotIndex + 1;
@@ -78,8 +84,20 @@ public class ForgeControllerMenu extends AbstractContainerMenu {
         } else {
             sourceSlot.setChanged();
         }
+        if (index - 36 == lastSlotIndex) {
+            if (!copyOfSourceStack.isEmpty() && !level.isClientSide()) {
+                triggerTakeEvent(playerIn, copyOfSourceStack, copyOfSourceStack.getCount());
+            }
+        }
         sourceSlot.onTake(playerIn, sourceStack);
         return copyOfSourceStack;
+    }
+
+    private void triggerTakeEvent(Player player, ItemStack stack, int amount) {
+        ItemStack outputStack = stack.copy();
+        outputStack.setCount(amount);
+        ForgeOutputTakenEvent event = new ForgeOutputTakenEvent(player, outputStack);
+        NeoForge.EVENT_BUS.post(event);
     }
 
     protected static boolean valid(ContainerLevelAccess access, Player player, TagKey<Block> targetBlock) {
