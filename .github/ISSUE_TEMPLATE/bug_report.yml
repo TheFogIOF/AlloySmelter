@@ -1,0 +1,32 @@
+name: Bug Report
+description: File a bug report.
+title: "Bug Report: "
+labels: ["bug"]
+assignees:
+  - octocat
+type: bug
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: Describe your problem.
+      value: ""
+    validations:
+      required: true
+  - type: dropdown
+    id: version
+    attributes:
+      label: Loader
+      options:
+        - NeoForge 1.21.1
+        - Forge 1.20.1
+      default: 0
+    validations:
+      required: true
+  - type: textarea
+    id: mod-version
+    attributes:
+      label: Mod Version
+      value: ""
+    validations:
+      required: true
