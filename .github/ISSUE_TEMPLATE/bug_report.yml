@@ -2,8 +2,6 @@ name: Bug Report
 description: File a bug report.
 title: "Bug Report: "
 labels: ["bug"]
-assignees:
-  - octocat
 type: bug
 body:
   - type: textarea
